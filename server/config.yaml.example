@@ -1,0 +1,6 @@
+api_keys:
+  tmdb: "<your api key>"
+
+users:
+  - "Andy"
+  - "Lisa"
