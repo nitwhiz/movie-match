@@ -4,9 +4,9 @@
     :style="{
       backgroundImage: `url(${imageSrc})`,
     }"
-    @touchstart="handleTouchStart"
-    @touchmove="handleTouchMove"
-    @touchend="handleTouchEnd"
+    @touchstart.passive="handleTouchStart"
+    @touchmove.passive="handleTouchMove"
+    @touchend.passive="handleTouchEnd"
   >
     <div class="image-holder">
       <img :src="imageSrc" alt="" />
@@ -19,8 +19,9 @@
 </template>
 
 <script lang="ts" setup>
-import { Media, TMDBMovieData, TMDBPosterBaseUrl } from '../model/Media';
+import { Media, TMDBMovieData } from '../model/Media';
 import { computed, ref, watch } from 'vue';
+import { API_SERVER_BASE_URL } from '../common/Environment';
 
 interface Props {
   media: Media<TMDBMovieData>;
@@ -31,31 +32,43 @@ const props = defineProps<Props>();
 const metaVisible = ref(false);
 
 const imageSrc = computed(
-  () => `${TMDBPosterBaseUrl}${props.media.Data.poster_path}`
+  () => `${API_SERVER_BASE_URL}/media/${props.media.ID}/poster`
 );
 
 const inTouch = ref(false);
-const touchMoved = ref(false);
+const firstTouch = ref(null as Touch | null);
+const lastTouch = ref(null as Touch | null);
 
-const handleTouchStart = () => {
+const handleTouchStart = (e: TouchEvent) => {
   inTouch.value = true;
+
+  firstTouch.value = e.touches.item(0) || null;
+  lastTouch.value = e.touches.item(0) || null;
 };
 
-const handleTouchMove = () => {
+const handleTouchMove = (e: TouchEvent) => {
   if (inTouch.value) {
-    touchMoved.value = true;
+    lastTouch.value = e.touches.item(0) || null;
   }
 };
 
 const handleTouchEnd = () => {
-  // todo: this does not work on device
+  // todo: delta must be calculated during move
 
-  if (!touchMoved.value) {
-    metaVisible.value = !metaVisible.value;
+  const t1 = firstTouch.value;
+  const t2 = lastTouch.value;
+
+  if (t1 && t2) {
+    const d2 = (t1.pageX - t2.pageX) ** 2 + (t1.pageY - t2.pageY) ** 2;
+
+    if (d2 <= 5 ** 2) {
+      metaVisible.value = !metaVisible.value;
+    }
   }
 
   inTouch.value = false;
-  touchMoved.value = false;
+  firstTouch.value = null;
+  lastTouch.value = null;
 };
 
 watch(

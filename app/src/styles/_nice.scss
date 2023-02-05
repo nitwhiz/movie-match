@@ -1,0 +1,32 @@
+@mixin gradient-button($gradient, $border-width) {
+  background: black;
+  background-clip: padding-box;
+
+  border: $border-width solid transparent;
+  border-radius: 14px;
+
+  position: relative;
+
+  &:before {
+    content: '';
+    position: absolute;
+
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    z-index: -1;
+
+    margin: -$border-width;
+
+    border-radius: inherit;
+    background: $gradient;
+  }
+
+  .text {
+    background: $gradient;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}

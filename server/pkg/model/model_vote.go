@@ -18,3 +18,7 @@ type Vote struct {
 	Type      string `gorm:"not null"`
 	CreatedAt time.Time
 }
+
+func (v *Vote) TableName() string {
+	return "votes"
+}

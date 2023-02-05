@@ -1,14 +1,20 @@
 <template>
   <div class="card-wrapper">
     <div
+      class="notification"
+      :class="[matchNotificationVisible ? 'visible' : null]"
+    >
+      It's a match!
+    </div>
+    <div
       class="current-card"
       ref="currentCard"
       :style="{
         rotate: `${voteAngle}deg`,
       }"
       @touchstart="handleTouchStart"
-      @touchend="handleTouchEnd"
-      @touchmove="handleTouchMove"
+      @touchend.passive="handleTouchEnd"
+      @touchmove.passive="handleTouchMove"
     >
       <MediaCard v-if="currentMedia" :media="currentMedia" />
     </div>
@@ -18,16 +24,24 @@
   </div>
   <div class="button-wrapper">
     <div class="buttons">
-      <div class="button negative" @click="sendVote('negative')">
+      <div
+        class="button negative"
+        @click="buttonVote('negative')"
+        :class="[voteAngle <= -5 ? 'active' : null]"
+      >
         <PhX weight="bold" />
       </div>
-      <div class="button neutral" @click="sendVote('neutral')">
+      <div class="button neutral" @click="buttonVote('neutral')">
         <PhShuffle weight="bold" />
       </div>
-      <div class="button neutral">
+      <div class="button neutral" @click="sendSeen">
         <PhCheck weight="bold" />
       </div>
-      <div class="button positive" @click="sendVote('positive')">
+      <div
+        class="button positive"
+        @click="buttonVote('positive')"
+        :class="[voteAngle >= 5 ? 'active' : null]"
+      >
         <PhHeart weight="fill" />
       </div>
     </div>
@@ -40,6 +54,10 @@ import { Media, TMDBMovieData } from '../model/Media';
 import axios from 'axios';
 import MediaCard from './MediaCard.vue';
 import { PhHeart, PhX, PhShuffle, PhCheck } from 'phosphor-vue';
+import { useUserStore } from '../store/userStore';
+import { API_SERVER_BASE_URL } from '../common/Environment';
+
+const userStore = useUserStore();
 
 const mediaPtr = ref(0);
 const media = ref([] as Media<TMDBMovieData>[]);
@@ -52,16 +70,54 @@ const voteAngle = ref(0);
 const screenWidth = ref(320);
 const touchStartX = ref(screenWidth.value / 2);
 
+const matchNotificationVisible = ref(false);
+
+// todo: split sending votes and animating votes into funcs to be called if needed
+// todo: icons make bundle size go brrr
+// todo: use animation with keyframes for button bouncing
+
+const buttonVote = (voteType: string) => {
+  if (voteType === 'negative') {
+    voteAngle.value = -10;
+  } else if (voteType === 'positive') {
+    voteAngle.value = 10;
+  } else {
+    voteAngle.value = 0;
+  }
+
+  window.setTimeout(() => {
+    sendVote(voteType);
+    voteAngle.value = 0;
+  }, 50);
+};
+
 const sendVote = (voteType: string) => {
-  axios.put(
-    'http://192.168.127.22:6445/user/72416d6d-0b92-4f63-a11e-e834b1ba74e0/vote',
-    {
-      mediaId: media.value[mediaPtr.value].ID,
-      voteType: voteType,
-    }
-  );
+  axios
+    .put(
+      `${API_SERVER_BASE_URL}/user/${userStore.currentUser?.ID}/vote/${
+        media.value[mediaPtr.value].ID
+      }`,
+      {
+        voteType: voteType,
+      }
+    )
+    .then(({ data: { isMatch } }) => {
+      if (isMatch) {
+        matchNotificationVisible.value = true;
+
+        window.setTimeout(() => (matchNotificationVisible.value = false), 2000);
+      }
+    });
 
   ++mediaPtr.value;
+};
+
+const sendSeen = () => {
+  axios.post(
+    `${API_SERVER_BASE_URL}/user/${userStore.currentUser?.ID}/seen/${
+      media.value[mediaPtr.value].ID
+    }`
+  );
 };
 
 const handleTouchStart = (e: TouchEvent) => {
@@ -73,9 +129,6 @@ const handleTouchStart = (e: TouchEvent) => {
 };
 
 const handleTouchEnd = (e: TouchEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
-
   let voteResult = 'neutral';
 
   if (voteAngle.value <= -5) {
@@ -92,9 +145,6 @@ const handleTouchEnd = (e: TouchEvent) => {
 };
 
 const handleTouchMove = (e: TouchEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
-
   const pX = e.touches.item(0)!.pageX;
   const sX = touchStartX.value;
   const dX = pX - sX;
@@ -104,9 +154,7 @@ const handleTouchMove = (e: TouchEvent) => {
 
 onMounted(() => {
   axios
-    .get<{ Results: Media<TMDBMovieData>[] }>(
-      'http://192.168.127.22:6445/media'
-    )
+    .get<{ Results: Media<TMDBMovieData>[] }>(`${API_SERVER_BASE_URL}/media`)
     .then(({ data: { Results: results } }) => {
       media.value = results;
     });
@@ -119,6 +167,29 @@ onMounted(() => {
 
   width: 100%;
   height: 100%;
+
+  .notification {
+    position: absolute;
+    z-index: 30;
+
+    background: #222;
+    border-radius: 6px;
+    display: flex;
+
+    left: 50%;
+    top: -100px;
+    transform: translate(-50%, 0);
+
+    padding: 8px 12px;
+
+    transition-property: top;
+    transition-duration: 300ms;
+    transition-timing-function: ease-out;
+
+    &.visible {
+      top: 16px;
+    }
+  }
 
   .next-card,
   .current-card {
@@ -181,8 +252,21 @@ onMounted(() => {
 
       margin-right: calc($size / 4);
 
+      box-shadow: 0 0 10px rgba(20, 20, 20, 0.25);
+
+      transform: scale(1);
+      transition-property: transform;
+      transition-duration: 100ms;
+      transition-timing-function: ease-out;
+
       &:last-child {
         margin-right: 0;
+      }
+
+      &.active {
+        transform: scale(1.1);
+        transition-duration: 200ms;
+        transition-timing-function: cubic-bezier(0.5, 1.5, 0.5, 2);
       }
 
       &.positive {

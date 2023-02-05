@@ -1,5 +1,3 @@
-export const TMDBPosterBaseUrl = 'https://image.tmdb.org/t/p/w780';
-
 export interface TMDBMovieData {
   ID: number;
   Genres: { ID: number; Name: string }[];
@@ -11,7 +9,7 @@ export interface TMDBMovieData {
 
 type MediaType = TMDBMovieData;
 
-export interface Media<MT extends MediaType> {
+export interface Media<MT extends MediaType = any> {
   ID: string;
   ForeignID: string;
   Type: string;

@@ -1,7 +1,3 @@
 <template>
-  <VotingHost />
+  <router-view />
 </template>
-
-<script setup lang="ts">
-import VotingHost from './components/VotingHost.vue';
-</script>
