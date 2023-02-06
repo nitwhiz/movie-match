@@ -1,22 +1,28 @@
 import { defineStore } from 'pinia';
 import { User } from '../model/User';
-import { computed, ref } from 'vue';
-import axios from 'axios';
-import { API_SERVER_BASE_URL } from '../common/Environment';
+import { ref, toRaw, watch } from 'vue';
+import { getStored, putStored } from '../cache/CacheStorage';
 
 export const useUserStore = defineStore('user', () => {
-  const userList = ref([] as User[]);
   const currentUser = ref(null as User | null);
 
-  const users = computed<User[]>(() => [...userList.value]);
+  watch(currentUser, (value) => {
+    if (value !== null) {
+      putStored('currentUser', toRaw(value));
+    }
+  });
 
-  const loadUsers = () => {
-    axios
-      .get<{ Results: User[] }>(`${API_SERVER_BASE_URL}/user`)
-      .then(({ data: { Results: resultUsers } }) => {
-        userList.value = resultUsers;
-      });
+  const loadCurrentUser = async () => {
+    if (!currentUser.value) {
+      const storedUser = await getStored<User>('currentUser');
+
+      if (storedUser) {
+        currentUser.value = storedUser;
+      }
+    }
+
+    return currentUser.value !== null;
   };
 
-  return { currentUser, users, loadUsers };
+  return { currentUser, loadCurrentUser };
 });

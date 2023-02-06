@@ -11,33 +11,52 @@
     <div class="image-holder">
       <img :src="imageSrc" alt="" />
     </div>
-    <div class="meta-overlay" v-if="metaVisible">
-      <h1>{{ props.media.Data.Title }}</h1>
-      <p>{{ props.media.Data.Overview }}</p>
+    <div class="meta-overlay" v-if="showMeta">
+      <h3>{{ props.media.title }}</h3>
+      <p class="summary">{{ props.media.summary }}</p>
+      <p v-if="genres.length !== 0"><b>Genres: </b>{{ genres }}</p>
+      <p><b>Release Date: </b>{{ releaseDate }}</p>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { Media, TMDBMovieData } from '../model/Media';
+import { Media } from '../model/Media';
 import { computed, ref, watch } from 'vue';
-import { API_SERVER_BASE_URL } from '../common/Environment';
+import { useApiClient } from '../composables/useApiClient';
 
 interface Props {
-  media: Media<TMDBMovieData>;
+  media: Media;
+  metaVisible?: boolean;
 }
 
-const props = defineProps<Props>();
+interface Emits {
+  (e: 'update:metaVisible', visible: boolean): void;
+}
 
-const metaVisible = ref(false);
+const props = withDefaults(defineProps<Props>(), {
+  metaVisible: false,
+});
 
-const imageSrc = computed(
-  () => `${API_SERVER_BASE_URL}/media/${props.media.ID}/poster`
+const emits = defineEmits<Emits>();
+
+const showMeta = ref(props.metaVisible);
+
+const imageSrc = computed(() => useApiClient().getPosterUrl(props.media.id));
+
+const genres = computed(() => props.media.genres.map((g) => g.name).join(', '));
+const releaseDate = computed(() =>
+  new Date(props.media.releaseDate).toLocaleDateString()
 );
 
 const inTouch = ref(false);
 const firstTouch = ref(null as Touch | null);
 const lastTouch = ref(null as Touch | null);
+
+const setMetaVisible = (visible: boolean) => {
+  showMeta.value = visible;
+  emits('update:metaVisible', visible);
+};
 
 const handleTouchStart = (e: TouchEvent) => {
   inTouch.value = true;
@@ -62,7 +81,7 @@ const handleTouchEnd = () => {
     const d2 = (t1.pageX - t2.pageX) ** 2 + (t1.pageY - t2.pageY) ** 2;
 
     if (d2 <= 5 ** 2) {
-      metaVisible.value = !metaVisible.value;
+      setMetaVisible(!showMeta.value);
     }
   }
 
@@ -73,7 +92,12 @@ const handleTouchEnd = () => {
 
 watch(
   () => props.media,
-  () => (metaVisible.value = false)
+  () => setMetaVisible(false)
+);
+
+watch(
+  () => props.metaVisible,
+  () => (showMeta.value = props.metaVisible)
 );
 </script>
 
@@ -129,8 +153,21 @@ watch(
     justify-content: flex-end;
     flex-direction: column;
 
-    h1 {
-      margin: 0;
+    h3 {
+      margin: 0 0 20px 0;
+      font-size: 2rem;
+    }
+
+    p {
+      margin: 0 0 12px 0;
+
+      &.summary {
+        max-height: 80%;
+
+        /* todo: nice2have: scrolling if height > 80% */
+
+        overflow: hidden;
+      }
     }
   }
 

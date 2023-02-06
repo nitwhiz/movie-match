@@ -4,6 +4,7 @@ import UserSelectionView from './views/UserSelectionView.vue';
 import VoteView from './views/VoteView.vue';
 import MatchesView from './views/MatchesView.vue';
 import { useUserStore } from './store/userStore';
+import MediaView from './views/MediaView.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -26,6 +27,11 @@ const routes: RouteRecordRaw[] = [
     name: 'matches',
     component: () => MatchesView,
   },
+  {
+    path: '/media/:mediaId',
+    name: 'media',
+    component: () => MediaView,
+  },
 ];
 
 const router = createRouter({
@@ -33,11 +39,11 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   if (to.name !== 'main') {
-    const userStore = useUserStore();
+    const loggedIn = await useUserStore().loadCurrentUser();
 
-    if (userStore.currentUser === null) {
+    if (!loggedIn) {
       next({ name: 'main' });
       return;
     }

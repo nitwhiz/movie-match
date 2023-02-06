@@ -2,6 +2,7 @@
 
 * {
   box-sizing: border-box;
+  user-select: none;
 }
 
 html,
@@ -29,4 +30,23 @@ body {
 
 #app {
   position: relative;
+}
+
+h1,
+h2 {
+  font-family: Pacifico, sans-serif;
+
+  font-weight: normal;
+  margin-top: 0;
+
+  width: 100%;
+  text-align: center;
+}
+
+h1 {
+  font-size: 3.5rem;
+}
+
+h2 {
+  font-size: 2.5rem;
 }

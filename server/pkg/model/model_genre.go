@@ -5,12 +5,13 @@ import (
 	"time"
 )
 
-type User struct {
+type Genre struct {
 	ID        uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	Name      string    `gorm:"unique" json:"name"`
+	Media     []Media   `gorm:"many2many:media_genres;constraint:OnDelete:CASCADE" json:"media"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-func (u *User) TableName() string {
-	return "users"
+func (g *Genre) TableName() string {
+	return "genres"
 }

@@ -1,12 +1,13 @@
 <template>
   <div class="card-wrapper">
     <div
-      class="notification"
+      class="match-notification"
       :class="[matchNotificationVisible ? 'visible' : null]"
     >
       It's a match!
     </div>
     <div
+      v-if="currentMedia"
       class="current-card"
       ref="currentCard"
       :style="{
@@ -16,22 +17,23 @@
       @touchend.passive="handleTouchEnd"
       @touchmove.passive="handleTouchMove"
     >
-      <MediaCard v-if="currentMedia" :media="currentMedia" />
+      <MediaCard :media="currentMedia" />
     </div>
-    <div class="next-card">
-      <MediaCard v-if="nextMedia" :media="nextMedia" />
+    <div v-else-if="!isFetchingMedia" class="empty">No movies found! :(</div>
+    <div v-if="nextMedia" class="next-card">
+      <MediaCard :media="nextMedia" />
     </div>
   </div>
   <div class="button-wrapper">
-    <div class="buttons">
+    <div class="buttons" v-if="currentMedia">
       <div
         class="button negative"
-        @click="buttonVote('negative')"
+        @click="buttonVote(VoteType.NEGATIVE)"
         :class="[voteAngle <= -5 ? 'active' : null]"
       >
         <PhX weight="bold" />
       </div>
-      <div class="button neutral" @click="buttonVote('neutral')">
+      <div class="button neutral" @click="buttonVote(VoteType.NEUTRAL)">
         <PhShuffle weight="bold" />
       </div>
       <div class="button neutral" @click="sendSeen">
@@ -39,7 +41,7 @@
       </div>
       <div
         class="button positive"
-        @click="buttonVote('positive')"
+        @click="buttonVote(VoteType.POSITIVE)"
         :class="[voteAngle >= 5 ? 'active' : null]"
       >
         <PhHeart weight="fill" />
@@ -50,17 +52,21 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { Media, TMDBMovieData } from '../model/Media';
-import axios from 'axios';
+import { Media } from '../model/Media';
 import MediaCard from './MediaCard.vue';
-import { PhHeart, PhX, PhShuffle, PhCheck } from 'phosphor-vue';
+import { PhCheck, PhHeart, PhShuffle, PhX } from 'phosphor-vue';
 import { useUserStore } from '../store/userStore';
-import { API_SERVER_BASE_URL } from '../common/Environment';
+import { useApiClient } from '../composables/useApiClient';
+import { VoteType } from '../model/Vote';
 
 const userStore = useUserStore();
+const apiClient = useApiClient();
 
+const isFetchingMedia = ref(false);
+
+const mediaPagePtr = ref(0);
 const mediaPtr = ref(0);
-const media = ref([] as Media<TMDBMovieData>[]);
+const media = ref([] as Media[]);
 
 const currentMedia = computed(() => media.value[mediaPtr.value] || null);
 const nextMedia = computed(() => media.value[mediaPtr.value + 1] || null);
@@ -72,14 +78,35 @@ const touchStartX = ref(screenWidth.value / 2);
 
 const matchNotificationVisible = ref(false);
 
+const fetchMedia = () => {
+  apiClient
+    .getRecommendedMedia(userStore.currentUser?.id || '', mediaPagePtr.value)
+    .then((results) => {
+      media.value.push(...results);
+
+      isFetchingMedia.value = false;
+    });
+};
+
+const incMediaPtr = () => {
+  ++mediaPtr.value;
+
+  if (!isFetchingMedia.value && mediaPtr.value > media.value.length - 3) {
+    isFetchingMedia.value = true;
+
+    ++mediaPagePtr.value;
+    fetchMedia();
+  }
+};
+
 // todo: split sending votes and animating votes into funcs to be called if needed
 // todo: icons make bundle size go brrr
 // todo: use animation with keyframes for button bouncing
 
-const buttonVote = (voteType: string) => {
-  if (voteType === 'negative') {
+const buttonVote = (voteType: VoteType) => {
+  if (voteType === VoteType.NEGATIVE) {
     voteAngle.value = -10;
-  } else if (voteType === 'positive') {
+  } else if (voteType === VoteType.POSITIVE) {
     voteAngle.value = 10;
   } else {
     voteAngle.value = 0;
@@ -91,17 +118,15 @@ const buttonVote = (voteType: string) => {
   }, 50);
 };
 
-const sendVote = (voteType: string) => {
-  axios
-    .put(
-      `${API_SERVER_BASE_URL}/user/${userStore.currentUser?.ID}/vote/${
-        media.value[mediaPtr.value].ID
-      }`,
-      {
-        voteType: voteType,
-      }
+const sendVote = (voteType: VoteType) => {
+  apiClient
+    .voteMedia(
+      userStore.currentUser?.id || '',
+      media.value[mediaPtr.value].id,
+      voteType
     )
-    .then(({ data: { isMatch } }) => {
+
+    .then((isMatch) => {
       if (isMatch) {
         matchNotificationVisible.value = true;
 
@@ -109,14 +134,14 @@ const sendVote = (voteType: string) => {
       }
     });
 
-  ++mediaPtr.value;
+  incMediaPtr();
 };
 
 const sendSeen = () => {
-  axios.post(
-    `${API_SERVER_BASE_URL}/user/${userStore.currentUser?.ID}/seen/${
-      media.value[mediaPtr.value].ID
-    }`
+  apiClient.setMediaSeen(
+    userStore.currentUser?.id || '',
+    media.value[mediaPtr.value].id,
+    true
   );
 };
 
@@ -128,16 +153,16 @@ const handleTouchStart = (e: TouchEvent) => {
   touchStartX.value = e.touches.item(0)!.pageX;
 };
 
-const handleTouchEnd = (e: TouchEvent) => {
-  let voteResult = 'neutral';
+const handleTouchEnd = () => {
+  let voteResult = VoteType.NEUTRAL;
 
   if (voteAngle.value <= -5) {
-    voteResult = 'negative';
+    voteResult = VoteType.NEGATIVE;
   } else if (voteAngle.value >= 5) {
-    voteResult = 'positive';
+    voteResult = VoteType.POSITIVE;
   }
 
-  if (voteResult !== 'neutral') {
+  if (voteResult !== VoteType.NEUTRAL) {
     sendVote(voteResult);
   }
 
@@ -153,11 +178,8 @@ const handleTouchMove = (e: TouchEvent) => {
 };
 
 onMounted(() => {
-  axios
-    .get<{ Results: Media<TMDBMovieData>[] }>(`${API_SERVER_BASE_URL}/media`)
-    .then(({ data: { Results: results } }) => {
-      media.value = results;
-    });
+  isFetchingMedia.value = true;
+  fetchMedia();
 });
 </script>
 
@@ -168,7 +190,13 @@ onMounted(() => {
   width: 100%;
   height: 100%;
 
-  .notification {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .match-notification {
+    font-size: 1.33rem;
+
     position: absolute;
     z-index: 30;
 
@@ -180,7 +208,7 @@ onMounted(() => {
     top: -100px;
     transform: translate(-50%, 0);
 
-    padding: 8px 12px;
+    padding: 12px 20px;
 
     transition-property: top;
     transition-duration: 300ms;
@@ -207,6 +235,15 @@ onMounted(() => {
     transition-timing-function: linear;
 
     transform-origin: center 150%;
+  }
+
+  .empty {
+    text-align: center;
+    font-size: 3rem;
+
+    padding: 1.75rem;
+
+    color: rgba(255, 255, 255, 0.33);
   }
 
   .next-card {

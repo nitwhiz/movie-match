@@ -1,20 +1,23 @@
 <template>
   <div class="users">
     <h1>Welcome</h1>
-    <div class="user" v-for="u in userStore.users" @click="handleLogin(u)">
-      <span class="text">{{ u.Name }}</span>
+    <div class="user" v-for="u in users" @click="handleLogin(u)">
+      <span class="text">{{ u.name }}</span>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { User } from '../model/User';
 import { useUserStore } from '../store/userStore';
 import { useRouter } from 'vue-router';
+import { useApiClient } from '../composables/useApiClient';
 
 const userStore = useUserStore();
 const router = useRouter();
+
+const users = ref([] as User[]);
 
 const handleLogin = (u: User) => {
   userStore.currentUser = u;
@@ -22,7 +25,9 @@ const handleLogin = (u: User) => {
 };
 
 onMounted(() => {
-  userStore.loadUsers();
+  useApiClient()
+    .getUsers()
+    .then((userList) => (users.value = userList));
 });
 </script>
 
@@ -43,12 +48,6 @@ onMounted(() => {
   font-family: Pacifico, sans-serif;
 
   font-size: 2rem;
-
-  h1 {
-    font-weight: normal;
-    font-size: 3.5rem;
-    margin-top: 0;
-  }
 
   .user {
     text-transform: capitalize;

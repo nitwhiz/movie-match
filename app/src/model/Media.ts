@@ -1,19 +1,16 @@
-export interface TMDBMovieData {
-  ID: number;
-  Genres: { ID: number; Name: string }[];
-  Overview: string;
-  Title: string;
-  vote_average: number;
-  poster_path: string;
+export interface Genre {
+  id: number;
+  name: string;
 }
 
-type MediaType = TMDBMovieData;
-
-export interface Media<MT extends MediaType = any> {
-  ID: string;
-  ForeignID: string;
-  Type: string;
-  DataSource: string;
-  Data: MT;
-  CreatedAt: string;
+export interface Media {
+  id: string;
+  foreignId: string;
+  type: string;
+  provider: string;
+  title: string;
+  summary: string;
+  genres: Genre[];
+  releaseDate: string;
+  createdAt: string;
 }
