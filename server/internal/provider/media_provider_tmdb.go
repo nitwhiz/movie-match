@@ -20,8 +20,9 @@ import (
 var tmdbProviderName = "tmdb"
 
 type TMDBProvider struct {
-	apiKey        string
-	posterBaseUrl string
+	apiKey           string
+	posterBaseUrl    string
+	posterFsBasePath string
 }
 
 func NewTMDB() *TMDBProvider {
@@ -39,6 +40,12 @@ func (p *TMDBProvider) Init() error {
 
 	if p.posterBaseUrl == "" {
 		return errors.New("tmdb poster_base_url not configured")
+	}
+
+	p.posterFsBasePath = strings.TrimRight(viper.GetString("media_providers.tmdb.poster_fs_base_path"), "/")
+
+	if p.posterFsBasePath == "" {
+		return errors.New("tmdb poster_fs_base_path not configured")
 	}
 
 	return nil
@@ -94,8 +101,6 @@ func (p *TMDBProvider) Pull(db *gorm.DB) error {
 					}
 
 					genres = append(genres, genre)
-
-					return nil
 				}
 
 				releaseDate, err := time.Parse(time.DateOnly, movie.ReleaseDate)
@@ -125,16 +130,13 @@ func (p *TMDBProvider) Pull(db *gorm.DB) error {
 					log.Printf("updated")
 				}
 
-				posterBasePath := "/home/andy/posters/"
-				err = os.MkdirAll(posterBasePath, 0777)
-
-				if err != nil {
+				if err := os.MkdirAll(p.posterFsBasePath, 0777); err != nil {
 					return err
 				}
 
 				extension := path.Ext(movie.PosterPath)
 
-				posterFilePath := fmt.Sprintf("%s/%s%s", strings.TrimRight(posterBasePath, "/"), mediaModel.ID.String(), extension)
+				posterFilePath := fmt.Sprintf("%s/%s%s", p.posterFsBasePath, mediaModel.ID.String(), extension)
 
 				posterFile, err := os.Create(posterFilePath)
 
