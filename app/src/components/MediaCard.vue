@@ -16,7 +16,8 @@
         {{ props.media.summary }}
       </p>
       <p v-if="genres.length !== 0"><b>Genres: </b>{{ genres }}</p>
-      <p v-if="releaseDate"><b>Release Date: </b>{{ releaseDate }}</p>
+      <p v-if="releaseDate"><b>Release: </b>{{ releaseDate }}</p>
+      <p v-if="runtime"><b>Runtime: </b>{{ runtime }}</p>
     </div>
   </div>
 </template>
@@ -50,6 +51,16 @@ const genres = computed(() => props.media.genres.map((g) => g.name).join(', '));
 const releaseDate = computed(() =>
   new Date(props.media.releaseDate).toLocaleDateString()
 );
+const runtime = computed(() => {
+  if (props.media.runtime === 0) {
+    return '';
+  }
+
+  const hours = Math.floor(props.media.runtime / 60);
+  const minutes = Math.floor(props.media.runtime - hours * 60);
+
+  return `${hours > 0 ? `${hours}h ` : ''}${minutes}m`;
+});
 
 const inTouch = ref(false);
 const isTap = ref(false);
