@@ -60,7 +60,6 @@ func main() {
 	handler.AddUserRetrieveAll(router, db)
 
 	handler.AddUserMediaAddSeen(router, db)
-	handler.AddUserMediaDeleteSeen(router, db)
 	handler.AddUserMediaVote(router, db)
 
 	handler.AddUserMatchRetrieveAll(router, db)

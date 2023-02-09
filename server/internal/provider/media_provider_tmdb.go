@@ -3,175 +3,428 @@ package provider
 import (
 	"errors"
 	"fmt"
+	"github.com/nitwhiz/movie-match/server/internal/poster"
 	"github.com/nitwhiz/movie-match/server/pkg/model"
 	"github.com/ryanbradynd05/go-tmdb"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
-	"io"
-	"log"
+	"gorm.io/gorm/clause"
 	"math"
-	"net/http"
-	"os"
-	"path"
 	"strings"
+	"sync"
 	"time"
 )
 
 var tmdbProviderName = "tmdb"
 
+const (
+	pullDiscover = iota
+	pullPopular
+	pullTopRated
+)
+
 type TMDBProvider struct {
-	apiKey           string
-	posterBaseUrl    string
-	posterFsBasePath string
+	api           *tmdb.TMDb
+	posterFetcher *poster.Fetcher
+	language      string
+	region        string
+	dbLock        *sync.Mutex
+}
+
+type genreInfo = struct {
+	ID   int
+	Name string
 }
 
 func NewTMDB() *TMDBProvider {
-	return &TMDBProvider{}
+	return &TMDBProvider{
+		dbLock: &sync.Mutex{},
+	}
 }
 
 func (p *TMDBProvider) Init() error {
-	p.apiKey = viper.GetString("media_providers.tmdb.api_key")
+	posterFsBasePath := strings.TrimRight(viper.GetString("media_providers.tmdb.poster_fs_base_path"), "/")
 
-	if p.apiKey == "" {
-		return errors.New("tmdb api_key not configured")
+	if posterFsBasePath == "" {
+		return errors.New("tmdb poster_fs_base_path not configured")
 	}
 
-	p.posterBaseUrl = strings.TrimRight(viper.GetString("media_providers.tmdb.poster_base_url"), "/")
+	posterBaseUrl := strings.TrimRight(viper.GetString("media_providers.tmdb.poster_base_url"), "/")
 
-	if p.posterBaseUrl == "" {
+	if posterBaseUrl == "" {
 		return errors.New("tmdb poster_base_url not configured")
 	}
 
-	p.posterFsBasePath = strings.TrimRight(viper.GetString("media_providers.tmdb.poster_fs_base_path"), "/")
+	p.posterFetcher = poster.NewFetcher(posterFsBasePath, posterBaseUrl)
 
-	if p.posterFsBasePath == "" {
-		return errors.New("tmdb poster_fs_base_path not configured")
+	p.language = viper.GetString("media_providers.tmdb.language")
+
+	if p.language == "" {
+		p.language = "en"
 	}
+
+	p.region = viper.GetString("media_providers.tmdb.region")
+
+	if p.region == "" {
+		p.region = "US"
+	}
+
+	apiKey := viper.GetString("media_providers.tmdb.api_key")
+
+	if apiKey == "" {
+		return errors.New("tmdb api_key not configured")
+	}
+
+	config := tmdb.Config{
+		APIKey: apiKey,
+	}
+
+	p.api = tmdb.Init(config)
 
 	return nil
 }
 
 func (p *TMDBProvider) Pull(db *gorm.DB) error {
-	config := tmdb.Config{
-		APIKey: p.apiKey,
-	}
+	wg := &sync.WaitGroup{}
 
-	api := tmdb.Init(config)
+	// tv
 
-	discover, err := api.DiscoverMovie(map[string]string{
-		"language":      "de-DE",
-		"region":        "DE",
-		"include_adult": "false",
-	})
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
 
-	if err != nil {
-		panic(err)
-	}
+		if err := p.PullTv(db, pullDiscover, 5); err != nil {
+			log.WithFields(log.Fields{
+				"type":     model.MediaTypeTv,
+				"provider": tmdbProviderName,
+				"subtype":  "discover",
+			}).Error(err.Error())
+		}
+	}()
 
-	for discover.Page < discover.TotalPages {
-		log.Printf("processing page %d/%d ...", discover.Page, discover.TotalPages)
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
 
-		for _, movieShort := range discover.Results {
-			if err := (func(m tmdb.MovieShort) error {
-				foreignID := fmt.Sprintf("%d", m.ID)
+		if err := p.PullTv(db, pullPopular, 5); err != nil {
+			log.WithFields(log.Fields{
+				"type":     model.MediaTypeTv,
+				"provider": tmdbProviderName,
+				"subtype":  "popular",
+			}).Error(err.Error())
+		}
+	}()
 
-				log.Printf("processing movie '%s' (%s)", m.Title, foreignID)
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
 
-				movie, err := api.GetMovieInfo(m.ID, map[string]string{
-					"language": "de-DE",
-				})
+		if err := p.PullTv(db, pullTopRated, 5); err != nil {
+			log.WithFields(log.Fields{
+				"type":     model.MediaTypeTv,
+				"provider": tmdbProviderName,
+				"subtype":  "top_rated",
+			}).Error(err.Error())
+		}
+	}()
 
-				if err != nil {
-					return err
-				}
+	// movie
 
-				var genres []model.Genre
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
 
-				for _, g := range movie.Genres {
-					normalizedName := strings.TrimSpace(g.Name)
+		if err := p.PullMovie(db, pullDiscover, 5); err != nil {
+			log.WithFields(log.Fields{
+				"type":     model.MediaTypeMovie,
+				"provider": tmdbProviderName,
+				"subtype":  "discover",
+			}).Error(err.Error())
+		}
+	}()
 
-					var genre model.Genre
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
 
-					if err := db.Where("name = ?", normalizedName).First(&genre).Error; err != nil {
-						if errors.Is(err, gorm.ErrRecordNotFound) {
-							genre.Name = g.Name
-						} else {
-							return err
-						}
-					}
+		if err := p.PullMovie(db, pullPopular, 5); err != nil {
+			log.WithFields(log.Fields{
+				"type":     model.MediaTypeMovie,
+				"provider": tmdbProviderName,
+				"subtype":  "popular",
+			}).Error(err.Error())
+		}
+	}()
 
-					genres = append(genres, genre)
-				}
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
 
-				releaseDate, err := time.Parse(time.DateOnly, movie.ReleaseDate)
+		if err := p.PullMovie(db, pullTopRated, 5); err != nil {
+			log.WithFields(log.Fields{
+				"type":     model.MediaTypeMovie,
+				"provider": tmdbProviderName,
+				"subtype":  "top_rated",
+			}).Error(err.Error())
+		}
+	}()
 
-				mediaModel := model.Media{
-					ForeignID:   foreignID,
-					Type:        model.MediaTypeMovie,
-					Provider:    tmdbProviderName,
-					Title:       movie.Title,
-					Summary:     movie.Overview,
-					Genres:      genres,
-					Rating:      int(math.Round(float64(movie.VoteAverage) * 10.0)),
-					ReleaseDate: releaseDate,
-				}
+	time.Sleep(time.Second)
 
-				if err := db.First(&mediaModel, "foreign_id = ?", foreignID).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-					if err := db.Create(&mediaModel).Error; err != nil {
-						return err
-					}
+	wg.Wait()
 
-					log.Printf("created")
-				} else {
-					if err := db.Save(&mediaModel).Error; err != nil {
-						return err
-					}
+	log.Info("done")
 
-					log.Printf("updated")
-				}
+	return nil
+}
 
-				if err := os.MkdirAll(p.posterFsBasePath, 0777); err != nil {
-					return err
-				}
+func ensureGenres(mediaGenres []genreInfo, db *gorm.DB) ([]model.Genre, error) {
+	var genres []model.Genre
 
-				extension := path.Ext(movie.PosterPath)
+	for _, g := range mediaGenres {
+		normalizedName := strings.TrimSpace(g.Name)
 
-				posterFilePath := fmt.Sprintf("%s/%s%s", p.posterFsBasePath, mediaModel.ID.String(), extension)
-
-				posterFile, err := os.Create(posterFilePath)
-
-				if err != nil {
-					return err
-				}
-
-				defer posterFile.Close()
-
-				posterUrl := fmt.Sprintf("%s/%s", p.posterBaseUrl, strings.TrimLeft(movie.PosterPath, "/"))
-
-				resp, err := http.Get(posterUrl)
-
-				if err != nil {
-					return err
-				}
-
-				defer resp.Body.Close()
-
-				_, err = io.Copy(posterFile, resp.Body)
-
-				return err
-			})(movieShort); err != nil {
-				return err
-			}
+		genre := model.Genre{
+			Name: normalizedName,
 		}
 
-		discover, err = api.DiscoverMovie(map[string]string{
-			"language": "de-DE",
-			"region":   "DE",
-			"page":     fmt.Sprintf("%d", discover.Page+1),
-		})
+		if err := db.FirstOrCreate(&genre, "name = ?", normalizedName).Error; err != nil {
+			return genres, err
+		}
+
+		genres = append(genres, genre)
+	}
+
+	return genres, nil
+}
+
+func (p *TMDBProvider) PullMovie(db *gorm.DB, pullType int, pages int) error {
+	opts := map[string]string{
+		"language":      p.language,
+		"region":        p.region,
+		"include_adult": "false",
+	}
+
+	page := 0
+	totalPages := 1
+
+	for page < totalPages {
+		opts["page"] = fmt.Sprintf("%d", page+1)
+
+		var discover *tmdb.MoviePagedResults
+		var err error
+
+		if pullType == pullPopular {
+			discover, err = p.api.GetMoviePopular(opts)
+		} else if pullType == pullDiscover {
+			discover, err = p.api.DiscoverMovie(opts)
+		} else {
+			discover, err = p.api.GetMovieTopRated(opts)
+		}
 
 		if err != nil {
 			return err
+		}
+
+		page = discover.Page
+		totalPages = int(math.Min(float64(pages), float64(discover.TotalPages)))
+
+		log.WithFields(log.Fields{
+			"type":       model.MediaTypeMovie,
+			"provider":   tmdbProviderName,
+			"page":       page,
+			"totalPages": totalPages,
+		}).Info("fetching discover page")
+
+		for _, movieShort := range discover.Results {
+			logFields := log.Fields{
+				"type":     model.MediaTypeMovie,
+				"provider": tmdbProviderName,
+			}
+
+			foreignID := fmt.Sprintf("%d", movieShort.ID)
+
+			logFields["foreignID"] = foreignID
+			logFields["title"] = movieShort.Title
+
+			movie, err := p.api.GetMovieInfo(movieShort.ID, map[string]string{
+				"language": "de",
+			})
+
+			if movie.Overview == "" {
+				log.WithFields(logFields).Info("skipping: no overview")
+				continue
+			} else {
+				log.WithFields(logFields).Info("fetching info")
+			}
+
+			if err != nil {
+				return err
+			}
+
+			p.dbLock.Lock()
+
+			genres, err := ensureGenres(movie.Genres, db)
+
+			if err != nil {
+				return err
+			}
+
+			releaseDate, err := time.Parse(time.DateOnly, movie.ReleaseDate)
+
+			if err != nil {
+				return err
+			}
+
+			mediaModel := model.Media{
+				ForeignID:   foreignID,
+				Type:        model.MediaTypeMovie,
+				Provider:    tmdbProviderName,
+				Title:       movie.Title,
+				Summary:     movie.Overview,
+				Genres:      genres,
+				Rating:      int(math.Round(float64(movie.VoteAverage) * 10.0)),
+				Runtime:     int(movie.Runtime),
+				ReleaseDate: releaseDate,
+			}
+
+			if err := db.Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "provider"}, {Name: "type"}, {Name: "foreign_id"}},
+				UpdateAll: true,
+			}).Create(&mediaModel).Error; err != nil {
+				return err
+			}
+
+			logFields["id"] = mediaModel.ID
+			logFields["posterPath"] = movie.PosterPath
+
+			if err := p.posterFetcher.Download(movie.PosterPath, mediaModel.ID.String()); err != nil {
+				return err
+			}
+
+			log.WithFields(logFields).Info("done")
+
+			p.dbLock.Unlock()
+		}
+	}
+
+	return nil
+}
+
+func (p *TMDBProvider) PullTv(db *gorm.DB, pullType int, pages int) error {
+	opts := map[string]string{
+		"language":     p.language,
+		"watch_region": p.region,
+		"timezone":     "Europe/Berlin",
+	}
+
+	page := 0
+	totalPages := 1
+
+	for page < totalPages {
+		opts["page"] = fmt.Sprintf("%d", page+1)
+
+		var discover *tmdb.TvPagedResults
+		var err error
+
+		if pullType == pullPopular {
+			discover, err = p.api.GetTvPopular(opts)
+		} else if pullType == pullDiscover {
+			discover, err = p.api.DiscoverTV(opts)
+		} else {
+			discover, err = p.api.GetTvTopRated(opts)
+		}
+
+		if err != nil {
+			return err
+		}
+
+		page = discover.Page
+		totalPages = int(math.Min(float64(pages), float64(discover.TotalPages)))
+
+		log.WithFields(log.Fields{
+			"type":       model.MediaTypeTv,
+			"provider":   tmdbProviderName,
+			"page":       page,
+			"totalPages": totalPages,
+		}).Info("fetching discover page")
+
+		for _, tvShort := range discover.Results {
+			logFields := log.Fields{
+				"type":     model.MediaTypeTv,
+				"provider": tmdbProviderName,
+			}
+
+			foreignID := fmt.Sprintf("%d", tvShort.ID)
+
+			logFields["foreignID"] = foreignID
+			logFields["title"] = tvShort.Name
+
+			tv, err := p.api.GetTvInfo(tvShort.ID, map[string]string{
+				"language": "de",
+			})
+
+			if tv.Overview == "" {
+				log.WithFields(logFields).Info("skipping: no overview")
+				continue
+			} else {
+				log.WithFields(logFields).Info("fetching info")
+			}
+
+			if err != nil {
+				return err
+			}
+
+			p.dbLock.Lock()
+
+			genres, err := ensureGenres(tv.Genres, db)
+
+			if err != nil {
+				return err
+			}
+
+			releaseDate, err := time.Parse(time.DateOnly, tv.FirstAirDate)
+
+			if err != nil {
+				return err
+			}
+
+			runtime := 0
+
+			if len(tv.EpisodeRunTime) > 0 {
+				runtime = tv.EpisodeRunTime[0]
+			}
+
+			mediaModel := model.Media{
+				ForeignID:   foreignID,
+				Type:        model.MediaTypeTv,
+				Provider:    tmdbProviderName,
+				Title:       tv.Name,
+				Summary:     tv.Overview,
+				Genres:      genres,
+				Rating:      int(math.Round(float64(tv.VoteAverage) * 10.0)),
+				Runtime:     runtime,
+				ReleaseDate: releaseDate,
+			}
+
+			if err := db.Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "provider"}, {Name: "type"}, {Name: "foreign_id"}},
+				UpdateAll: true,
+			}).Create(&mediaModel).Error; err != nil {
+				return err
+			}
+
+			logFields["id"] = mediaModel.ID
+			logFields["posterPath"] = tv.PosterPath
+
+			if err := p.posterFetcher.Download(tv.PosterPath, mediaModel.ID.String()); err != nil {
+				return err
+			}
+
+			log.WithFields(logFields).Info("done")
+
+			p.dbLock.Unlock()
 		}
 	}
 

@@ -1,12 +1,12 @@
 package handler
 
 type MatchResult struct {
-	MediaID     string `gorm:"media_id" json:"mediaId"`
 	OtherUserID string `gorm:"other_user_id" json:"otherUserId"`
 }
 
 type UserMatchParams struct {
-	UserId string `uri:"userId"`
+	MediaType string `form:"type"`
+	UserId    string `uri:"userId"`
 }
 
 type UserVoteParams struct {
@@ -20,12 +20,12 @@ type MediaPosterParams struct {
 }
 
 type UserSeenParams struct {
-	UserId  string `uri:"userId"`
-	MediaId string `uri:"mediaId"`
+	UserID  string `uri:"userId"`
+	MediaID string `uri:"mediaId"`
 }
 
 type MediaParams struct {
-	MediaId string `uri:"mediaId"`
+	MediaID string `uri:"mediaId"`
 }
 
 type MediaRecommendationParams struct {

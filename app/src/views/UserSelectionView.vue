@@ -61,7 +61,7 @@ onMounted(() => {
 
     $border-width: 3px;
 
-    @include nice.gradient-button(
+    @include nice.gradient-border(
       linear-gradient(20deg, rgb(34, 193, 195) 0%, rgb(253, 187, 45) 100%),
       $border-width
     );

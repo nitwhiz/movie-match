@@ -1,14 +1,13 @@
 package handler
 
 import (
-	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/nitwhiz/movie-match/server/internal/dbutils"
+	"github.com/nitwhiz/movie-match/server/internal/poster"
 	"github.com/nitwhiz/movie-match/server/pkg/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"net/http"
-	"path/filepath"
 )
 
 func AddMediaRetrieveAll(router gin.IRouter, db *gorm.DB) {
@@ -32,18 +31,16 @@ func AddMediaRetrieveById(router gin.IRouter, db *gorm.DB) {
 			return
 		}
 
-		var media model.Media
+		media, err := dbutils.FindByIdOrNil[model.Media](db.Preload(clause.Associations), mediaParams.MediaID)
 
-		if err := db.Preload(clause.Associations).Limit(1).Where("id = ?", mediaParams.MediaId).First(&media).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				context.AbortWithStatus(http.StatusNotFound)
-				return
-			} else {
-				context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-					"error": err.Error(),
-				})
-				return
-			}
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if media == nil {
+			context.Status(http.StatusNotFound)
+			return
 		}
 
 		context.JSON(http.StatusOK, media)
@@ -59,27 +56,28 @@ func AddMediaRetrievePoster(router gin.IRouter, db *gorm.DB) {
 			return
 		}
 
-		var media model.Media
-
-		if err := db.Where("id = ?", mediaPosterParams.MediaID).Find(&media).Error; err != nil {
-			context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-
-		// todo: this is stupid
-		files, err := filepath.Glob(fmt.Sprintf("/home/andy/posters/%s.*", media.ID))
+		media, err := dbutils.FindByIdOrNil[model.Media](db.Preload(clause.Associations), mediaPosterParams.MediaID)
 
 		if err != nil {
-			context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		if len(files) == 0 {
-			context.JSON(http.StatusNotFound, gin.H{"error": "0 files"})
+		if media == nil {
+			context.Status(http.StatusNotFound)
+			return
+		}
+
+		fsPath, err := poster.GetPosterPath(mediaPosterParams.MediaID)
+
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
 			return
 		}
 
 		context.Status(http.StatusOK)
-		context.File(files[0])
+		context.File(fsPath)
 	})
 }

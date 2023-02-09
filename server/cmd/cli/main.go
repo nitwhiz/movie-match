@@ -4,16 +4,19 @@ import (
 	"github.com/nitwhiz/movie-match/server/internal/config"
 	"github.com/nitwhiz/movie-match/server/internal/provider"
 	"github.com/nitwhiz/movie-match/server/pkg/model"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"log"
-	"os"
 	"time"
 )
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
+
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
@@ -21,7 +24,7 @@ func main() {
 	dsn := "host=localhost user=root password=root dbname=movie_match sslmode=disable TimeZone=Europe/Berlin"
 
 	verboseLogger := logger.New(
-		log.New(os.Stdout, "\n", log.LstdFlags),
+		log.New(),
 		logger.Config{
 			SlowThreshold: time.Second,
 			LogLevel:      logger.Error,

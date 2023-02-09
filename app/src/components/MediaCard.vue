@@ -1,21 +1,22 @@
 <template>
   <div
     class="media-card"
-    :style="{
-      backgroundImage: `url(${imageSrc})`,
-    }"
+    :style="cardStyle"
     @touchstart.passive="handleTouchStart"
     @touchmove.passive="handleTouchMove"
     @touchend.passive="handleTouchEnd"
   >
     <div class="image-holder">
-      <img :src="imageSrc" alt="" />
+      <img :src="posterUrl" alt="" />
     </div>
     <div class="meta-overlay" v-if="showMeta">
       <h3>{{ props.media.title }}</h3>
-      <p class="summary">{{ props.media.summary }}</p>
+      <h4>{{ mediaTypeLabel }}</h4>
+      <p v-if="props.media.summary" class="summary">
+        {{ props.media.summary }}
+      </p>
       <p v-if="genres.length !== 0"><b>Genres: </b>{{ genres }}</p>
-      <p><b>Release Date: </b>{{ releaseDate }}</p>
+      <p v-if="releaseDate"><b>Release Date: </b>{{ releaseDate }}</p>
     </div>
   </div>
 </template>
@@ -24,6 +25,7 @@
 import { Media } from '../model/Media';
 import { computed, ref, watch } from 'vue';
 import { useApiClient } from '../composables/useApiClient';
+import { useMediaType } from '../composables/useMediaType';
 
 interface Props {
   media: Media;
@@ -42,7 +44,7 @@ const emits = defineEmits<Emits>();
 
 const showMeta = ref(props.metaVisible);
 
-const imageSrc = computed(() => useApiClient().getPosterUrl(props.media.id));
+const posterUrl = computed(() => useApiClient().getPosterUrl(props.media.id));
 
 const genres = computed(() => props.media.genres.map((g) => g.name).join(', '));
 const releaseDate = computed(() =>
@@ -50,8 +52,18 @@ const releaseDate = computed(() =>
 );
 
 const inTouch = ref(false);
+const isTap = ref(false);
 const firstTouch = ref(null as Touch | null);
-const lastTouch = ref(null as Touch | null);
+
+const cardStyle = computed(() => ({
+  backgroundImage: `url(${posterUrl.value})`,
+}));
+
+const { getMediaTypeLabelSingular } = useMediaType();
+
+const mediaTypeLabel = computed(() =>
+  getMediaTypeLabelSingular(props.media.type)
+);
 
 const setMetaVisible = (visible: boolean) => {
   showMeta.value = visible;
@@ -62,32 +74,32 @@ const handleTouchStart = (e: TouchEvent) => {
   inTouch.value = true;
 
   firstTouch.value = e.touches.item(0) || null;
-  lastTouch.value = e.touches.item(0) || null;
+  isTap.value = true;
 };
 
 const handleTouchMove = (e: TouchEvent) => {
-  if (inTouch.value) {
-    lastTouch.value = e.touches.item(0) || null;
+  if (isTap.value && inTouch.value) {
+    const t1 = firstTouch.value;
+    const t2 = e.touches.item(0) || null;
+
+    if (t1 && t2) {
+      const d2 = (t1.pageX - t2.pageX) ** 2 + (t1.pageY - t2.pageY) ** 2;
+
+      if (d2 > 5 ** 2) {
+        isTap.value = false;
+      }
+    }
   }
 };
 
 const handleTouchEnd = () => {
-  // todo: delta must be calculated during move
-
-  const t1 = firstTouch.value;
-  const t2 = lastTouch.value;
-
-  if (t1 && t2) {
-    const d2 = (t1.pageX - t2.pageX) ** 2 + (t1.pageY - t2.pageY) ** 2;
-
-    if (d2 <= 5 ** 2) {
-      setMetaVisible(!showMeta.value);
-    }
+  if (isTap.value) {
+    setMetaVisible(!showMeta.value);
   }
 
   inTouch.value = false;
+  isTap.value = false;
   firstTouch.value = null;
-  lastTouch.value = null;
 };
 
 watch(
@@ -126,7 +138,7 @@ watch(
     height: 100%;
 
     backdrop-filter: blur(20px);
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.25);
 
     img {
       width: auto;
@@ -146,20 +158,30 @@ watch(
 
     background-color: rgba(0, 0, 0, 0.75);
     color: white;
-    text-shadow: 0 0 8px black;
-    padding: 1.5rem 1rem 7rem 1rem;
+    text-shadow: 0 0 1rem black;
+    padding: 1rem 1rem 8rem 1rem;
 
     display: flex;
     justify-content: flex-end;
     flex-direction: column;
 
     h3 {
-      margin: 0 0 20px 0;
-      font-size: 2rem;
+      margin: 0;
+      font-size: 2.5rem;
+      font-weight: normal;
+    }
+
+    h4 {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: normal;
+      line-height: 1.25rem;
     }
 
     p {
-      margin: 0 0 12px 0;
+      margin: 12px 0 0 0;
+      font-size: 1rem;
+      line-height: 1.25rem;
 
       &.summary {
         max-height: 80%;

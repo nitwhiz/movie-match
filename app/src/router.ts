@@ -10,27 +10,27 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'main',
-    component: () => UserSelectionView,
+    component: UserSelectionView,
   },
   {
     path: '/home',
     name: 'home',
-    component: () => HomeView,
+    component: HomeView,
   },
   {
-    path: '/vote/movies',
-    name: 'vote-movies',
-    component: () => VoteView,
+    path: '/vote',
+    name: 'vote',
+    component: VoteView,
   },
   {
     path: '/matches',
     name: 'matches',
-    component: () => MatchesView,
+    component: MatchesView,
   },
   {
     path: '/media/:mediaId',
     name: 'media',
-    component: () => MediaView,
+    component: MediaView,
   },
 ];
 

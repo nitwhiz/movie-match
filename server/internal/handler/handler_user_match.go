@@ -16,14 +16,27 @@ func AddUserMatchRetrieveAll(router gin.IRouter, db *gorm.DB) {
 			return
 		}
 
+		if err := context.ShouldBindQuery(&matchParams); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
 		var matches []MatchResult
 
-		db.
-			Table((&model.Vote{}).TableName()+" AS a").
-			Select("a.media_id as media_id, b.user_id as other_user_id").
+		tx := db.
+			Table((&model.Vote{}).TableName() + " AS a").
+			Select("a.media_id AS media_id").
+			Select("b.user_id AS other_user_id")
+
+		if matchParams.MediaType != "" {
+			tx.Joins("JOIN "+(&model.Media{}).TableName()+" AS m ON a.media_id = m.id AND m.type = ?", matchParams.MediaType)
+		}
+
+		tx.
 			Joins("JOIN "+(&model.Vote{}).TableName()+" AS b ON a.media_id = b.media_id AND b.user_id != ?", matchParams.UserId).
-			Where("a.user_id = ? AND a.type = 'positive' AND b.type = 'positive'", matchParams.UserId).
-			Scan(&matches)
+			Where("a.user_id = ? AND a.type = 'positive' AND b.type = 'positive'", matchParams.UserId)
+
+		tx.Scan(&matches)
 
 		context.JSON(http.StatusOK, gin.H{
 			"results": matches,
