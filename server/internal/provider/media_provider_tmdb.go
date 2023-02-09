@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"math"
+	"math/rand"
 	"strings"
 	"sync"
 	"time"
@@ -24,12 +25,18 @@ const (
 	pullTopRated
 )
 
+const requestCooldownMin = time.Millisecond * 250
+const requestCooldownMax = time.Millisecond * 800
+
+func getRequestCooldown() time.Duration {
+	return time.Duration(rand.Float64()*float64(requestCooldownMax-requestCooldownMin) + float64(requestCooldownMin))
+}
+
 type TMDBProvider struct {
 	api           *tmdb.TMDb
 	posterFetcher *poster.Fetcher
 	language      string
 	region        string
-	dbLock        *sync.Mutex
 }
 
 type genreInfo = struct {
@@ -38,9 +45,7 @@ type genreInfo = struct {
 }
 
 func NewTMDB() *TMDBProvider {
-	return &TMDBProvider{
-		dbLock: &sync.Mutex{},
-	}
+	return &TMDBProvider{}
 }
 
 func (p *TMDBProvider) Init() error {
@@ -86,6 +91,8 @@ func (p *TMDBProvider) Init() error {
 }
 
 func (p *TMDBProvider) Pull(db *gorm.DB) error {
+	pageCount := 10
+
 	wg := &sync.WaitGroup{}
 
 	// tv
@@ -94,7 +101,7 @@ func (p *TMDBProvider) Pull(db *gorm.DB) error {
 		wg.Add(1)
 		defer wg.Done()
 
-		if err := p.PullTv(db, pullDiscover, 5); err != nil {
+		if err := p.PullTv(db, pullDiscover, pageCount); err != nil {
 			log.WithFields(log.Fields{
 				"type":     model.MediaTypeTv,
 				"provider": tmdbProviderName,
@@ -107,7 +114,7 @@ func (p *TMDBProvider) Pull(db *gorm.DB) error {
 		wg.Add(1)
 		defer wg.Done()
 
-		if err := p.PullTv(db, pullPopular, 5); err != nil {
+		if err := p.PullTv(db, pullPopular, pageCount); err != nil {
 			log.WithFields(log.Fields{
 				"type":     model.MediaTypeTv,
 				"provider": tmdbProviderName,
@@ -120,7 +127,7 @@ func (p *TMDBProvider) Pull(db *gorm.DB) error {
 		wg.Add(1)
 		defer wg.Done()
 
-		if err := p.PullTv(db, pullTopRated, 5); err != nil {
+		if err := p.PullTv(db, pullTopRated, pageCount); err != nil {
 			log.WithFields(log.Fields{
 				"type":     model.MediaTypeTv,
 				"provider": tmdbProviderName,
@@ -135,7 +142,7 @@ func (p *TMDBProvider) Pull(db *gorm.DB) error {
 		wg.Add(1)
 		defer wg.Done()
 
-		if err := p.PullMovie(db, pullDiscover, 5); err != nil {
+		if err := p.PullMovie(db, pullDiscover, pageCount); err != nil {
 			log.WithFields(log.Fields{
 				"type":     model.MediaTypeMovie,
 				"provider": tmdbProviderName,
@@ -148,7 +155,7 @@ func (p *TMDBProvider) Pull(db *gorm.DB) error {
 		wg.Add(1)
 		defer wg.Done()
 
-		if err := p.PullMovie(db, pullPopular, 5); err != nil {
+		if err := p.PullMovie(db, pullPopular, pageCount); err != nil {
 			log.WithFields(log.Fields{
 				"type":     model.MediaTypeMovie,
 				"provider": tmdbProviderName,
@@ -161,7 +168,7 @@ func (p *TMDBProvider) Pull(db *gorm.DB) error {
 		wg.Add(1)
 		defer wg.Done()
 
-		if err := p.PullMovie(db, pullTopRated, 5); err != nil {
+		if err := p.PullMovie(db, pullTopRated, pageCount); err != nil {
 			log.WithFields(log.Fields{
 				"type":     model.MediaTypeMovie,
 				"provider": tmdbProviderName,
@@ -201,6 +208,7 @@ func ensureGenres(mediaGenres []genreInfo, db *gorm.DB) ([]model.Genre, error) {
 
 func (p *TMDBProvider) PullMovie(db *gorm.DB, pullType int, pages int) error {
 	opts := map[string]string{
+		"sort_by":       "rating.desc",
 		"language":      p.language,
 		"region":        p.region,
 		"include_adult": "false",
@@ -263,8 +271,6 @@ func (p *TMDBProvider) PullMovie(db *gorm.DB, pullType int, pages int) error {
 				return err
 			}
 
-			p.dbLock.Lock()
-
 			genres, err := ensureGenres(movie.Genres, db)
 
 			if err != nil {
@@ -289,6 +295,7 @@ func (p *TMDBProvider) PullMovie(db *gorm.DB, pullType int, pages int) error {
 				ReleaseDate: releaseDate,
 			}
 
+			// todo: this tries to be atomic, but still throws errors sometimes...
 			if err := db.Clauses(clause.OnConflict{
 				Columns:   []clause.Column{{Name: "provider"}, {Name: "type"}, {Name: "foreign_id"}},
 				UpdateAll: true,
@@ -305,7 +312,7 @@ func (p *TMDBProvider) PullMovie(db *gorm.DB, pullType int, pages int) error {
 
 			log.WithFields(logFields).Info("done")
 
-			p.dbLock.Unlock()
+			time.Sleep(getRequestCooldown())
 		}
 	}
 
@@ -314,6 +321,7 @@ func (p *TMDBProvider) PullMovie(db *gorm.DB, pullType int, pages int) error {
 
 func (p *TMDBProvider) PullTv(db *gorm.DB, pullType int, pages int) error {
 	opts := map[string]string{
+		"sort_by":      "vote_average.desc",
 		"language":     p.language,
 		"watch_region": p.region,
 		"timezone":     "Europe/Berlin",
@@ -376,8 +384,6 @@ func (p *TMDBProvider) PullTv(db *gorm.DB, pullType int, pages int) error {
 				return err
 			}
 
-			p.dbLock.Lock()
-
 			genres, err := ensureGenres(tv.Genres, db)
 
 			if err != nil {
@@ -424,7 +430,7 @@ func (p *TMDBProvider) PullTv(db *gorm.DB, pullType int, pages int) error {
 
 			log.WithFields(logFields).Info("done")
 
-			p.dbLock.Unlock()
+			time.Sleep(getRequestCooldown())
 		}
 	}
 

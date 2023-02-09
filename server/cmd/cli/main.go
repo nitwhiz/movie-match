@@ -1,15 +1,11 @@
 package main
 
 import (
+	"github.com/nitwhiz/movie-match/server/internal/command"
 	"github.com/nitwhiz/movie-match/server/internal/config"
-	"github.com/nitwhiz/movie-match/server/internal/provider"
-	"github.com/nitwhiz/movie-match/server/pkg/model"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	"time"
+	"github.com/urfave/cli/v2"
+	"os"
 )
 
 func main() {
@@ -18,60 +14,30 @@ func main() {
 	})
 
 	if err := config.Init(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	dsn := "host=localhost user=root password=root dbname=movie_match sslmode=disable TimeZone=Europe/Berlin"
-
-	verboseLogger := logger.New(
-		log.New(),
-		logger.Config{
-			SlowThreshold: time.Second,
-			LogLevel:      logger.Error,
-			Colorful:      true,
+	app := &cli.App{
+		Name:  "movie-match",
+		Usage: "cli utility for the movie-match server",
+		Commands: []*cli.Command{
+			{
+				Name:  "pull-media",
+				Usage: "pull data from a media provider",
+				Flags: []cli.Flag{
+					&cli.StringSliceFlag{
+						Name:  "media-type",
+						Value: cli.NewStringSlice("all"),
+						Usage: "which type of media to pull. possible values: movie, tv, all",
+					},
+				},
+				ArgsUsage: "media-provider",
+				Action:    command.PullMedia,
+			},
 		},
-	)
-
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: verboseLogger,
-	})
-
-	if err != nil {
-		panic(err)
 	}
 
-	err = db.AutoMigrate(
-		&model.User{},
-		&model.Media{},
-		&model.Vote{},
-		&model.MediaSeen{},
-	)
-
-	if err != nil {
-		panic(err)
-	}
-
-	users := viper.GetStringSlice("users")
-
-	for _, userName := range users {
-		(func(name string) {
-			log.Printf("creating user %s", name)
-
-			u := model.User{
-				Name: name,
-			}
-
-			db.Where("name = ?", u.Name).FirstOrCreate(&u)
-		})(userName)
-	}
-
-	p := provider.NewTMDB()
-
-	if err := p.Init(); err != nil {
-		panic(err)
-	}
-
-	if err := p.Pull(db); err != nil {
-		panic(err)
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
 	}
 }
