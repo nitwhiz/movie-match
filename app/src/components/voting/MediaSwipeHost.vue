@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { PhTelevision } from 'phosphor-vue';
+import { PhTelevision } from '@phosphor-icons/vue';
 import { Media } from '../../model/Media';
 import { computed, ref, watch } from 'vue';
 import { VoteType } from '../../model/Vote';

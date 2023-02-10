@@ -18,8 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-// todo: icons make bundle size go brrr
-import { PhCheck, PhHeart, PhShuffle, PhX } from 'phosphor-vue';
+import { PhCheck, PhHeart, PhShuffle, PhX } from '@phosphor-icons/vue';
 import { VoteType } from '../../model/Vote';
 
 interface Emits {
