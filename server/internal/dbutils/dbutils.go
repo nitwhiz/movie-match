@@ -39,7 +39,7 @@ func InitUsers(db *gorm.DB) error {
 	users := viper.GetStringSlice("users")
 
 	for _, userName := range users {
-		log.Info("ensuring user %s", userName)
+		log.Infof("ensuring user %s", userName)
 
 		db.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "name"}},

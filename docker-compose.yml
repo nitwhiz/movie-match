@@ -13,13 +13,6 @@ services:
     networks:
       - db
 
-#  app:
-#    image: golang:1.19.5-alpine3.17
-#    working_dir: /app
-#    volumes:
-#      - ./:/app:ro
-#    command: 'go run ./cmd/server'
-
 networks:
   db:
 
