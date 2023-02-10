@@ -18,5 +18,6 @@ export interface Media {
   genres: Genre[];
   runtime: number;
   releaseDate: string;
+  rating: number;
   createdAt: string;
 }

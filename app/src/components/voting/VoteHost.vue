@@ -1,5 +1,9 @@
 <template>
-  <div class="vote-host">
+  <div
+    class="vote-host"
+    @contextmenu="handleLongTap"
+    @touchend="handleTouchEnd"
+  >
     <div
       class="match-notification"
       :class="[matchNotificationVisible ? 'visible' : null]"
@@ -7,19 +11,25 @@
       It's a match!
     </div>
     <MediaSwipeHost
+      v-model:current-media-meta-visible="currentMediaMetaVisible"
       :current-media="currentMedia"
       :next-media="nextMedia"
       v-model:vote-type="currentVoteType"
       @vote="handleVote"
     />
-  </div>
-  <div class="button-wrapper" v-if="currentMedia">
-    <ButtonHost @vote="handleButtonVote" @seen="handleSeen" />
+
+    <div
+      class="button-wrapper"
+      v-if="currentMedia"
+      :class="[hideButtons ? 'hidden' : 'visible']"
+    >
+      <ButtonHost @vote="handleButtonVote" @seen="handleSeen" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { Media } from '../../model/Media';
 import { useUserStore } from '../../store/userStore';
 import { useApiClient } from '../../composables/useApiClient';
@@ -27,7 +37,7 @@ import { VoteType } from '../../model/Vote';
 import MediaSwipeHost from './MediaSwipeHost.vue';
 import ButtonHost from './ButtonHost.vue';
 
-const MEDIA_COUNT_THRESHOLD = 3;
+const MEDIA_COUNT_REFRESH_THRESHOLD = 5;
 
 const userStore = useUserStore();
 const apiClient = useApiClient();
@@ -44,12 +54,33 @@ const mediaIndex = ref(0);
 const currentMedia = computed(() => mediaList.value[mediaIndex.value] || null);
 const nextMedia = computed(() => mediaList.value[mediaIndex.value + 1] || null);
 
+const hideButtons = ref(false);
+
+const currentMediaMetaVisible = ref(false);
+
+watch(currentMediaMetaVisible, (v) => {
+  if (v && hideButtons.value) {
+    currentMediaMetaVisible.value = false;
+  }
+});
+
+const handleLongTap = () => {
+  hideButtons.value = true;
+};
+
+const handleTouchEnd = () => {
+  hideButtons.value = false;
+};
+
 const showNextMedia = () => {
   ++mediaIndex.value;
 
   nextTick(() => (currentVoteType.value = VoteType.NEUTRAL));
 
-  if (mediaIndex.value > mediaList.value.length - MEDIA_COUNT_THRESHOLD) {
+  if (
+    mediaIndex.value >
+    mediaList.value.length - MEDIA_COUNT_REFRESH_THRESHOLD
+  ) {
     fetchMedia();
   }
 };
@@ -148,16 +179,24 @@ onMounted(() => {
       top: 16px;
     }
   }
-}
 
-.button-wrapper {
-  position: absolute;
+  .button-wrapper {
+    position: absolute;
 
-  z-index: 30;
+    z-index: 30;
 
-  bottom: 1.8rem;
-  left: 0;
+    bottom: 1.8rem;
+    left: 0;
 
-  width: 100%;
+    width: 100%;
+
+    transition-property: opacity;
+    transition-duration: 100ms;
+    transition-timing-function: linear;
+
+    &.hidden {
+      opacity: 0;
+    }
+  }
 }
 </style>

@@ -18,11 +18,20 @@
       <p v-if="genres.length !== 0"><b>Genres: </b>{{ genres }}</p>
       <p v-if="releaseDate"><b>Release: </b>{{ releaseDate }}</p>
       <p v-if="runtime"><b>Runtime: </b>{{ runtime }}</p>
+      <p class="rating" v-if="props.media.rating">
+        <b>Rating: </b>
+        <span class="stars">
+          <PhStar weight="fill" v-for="_ in ratingFilled" />
+          <PhStarHalf weight="fill" v-if="ratingHalf" />
+          <PhStar weight="duotone" v-for="_ in ratingEmpty" />
+        </span>
+      </p>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { PhStar, PhStarHalf } from '@phosphor-icons/vue';
 import { Media } from '../model/Media';
 import { computed, ref, watch } from 'vue';
 import { useApiClient } from '../composables/useApiClient';
@@ -47,9 +56,20 @@ const showMeta = ref(props.metaVisible);
 
 const posterUrl = computed(() => useApiClient().getPosterUrl(props.media.id));
 
+const ratingFilled = computed(() => Math.floor(props.media.rating / 20));
+const ratingHalf = computed(
+  () => props.media.rating / 20 - Math.floor(props.media.rating / 20) >= 0.5
+);
+const ratingEmpty = computed(
+  () => 5 - ratingFilled.value - (ratingHalf.value ? 1 : 0)
+);
 const genres = computed(() => props.media.genres.map((g) => g.name).join(', '));
 const releaseDate = computed(() =>
-  new Date(props.media.releaseDate).toLocaleDateString()
+  new Date(props.media.releaseDate).toLocaleDateString(['de-DE'], {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
 );
 const runtime = computed(() => {
   if (props.media.runtime === 0) {
@@ -76,10 +96,15 @@ const mediaTypeLabel = computed(() =>
   getMediaTypeLabelSingular(props.media.type)
 );
 
-const setMetaVisible = (visible: boolean) => {
-  showMeta.value = visible;
-  emits('update:metaVisible', visible);
-};
+watch(
+  () => props.media,
+  () => emits('update:metaVisible', false)
+);
+
+watch(
+  () => props.metaVisible,
+  (v) => (showMeta.value = v)
+);
 
 const handleTouchStart = (e: TouchEvent) => {
   inTouch.value = true;
@@ -105,23 +130,13 @@ const handleTouchMove = (e: TouchEvent) => {
 
 const handleTouchEnd = () => {
   if (isTap.value) {
-    setMetaVisible(!showMeta.value);
+    emits('update:metaVisible', !showMeta.value);
   }
 
   inTouch.value = false;
   isTap.value = false;
   firstTouch.value = null;
 };
-
-watch(
-  () => props.media,
-  () => setMetaVisible(false)
-);
-
-watch(
-  () => props.metaVisible,
-  () => (showMeta.value = props.metaVisible)
-);
 </script>
 
 <style lang="scss" scoped>
@@ -154,8 +169,10 @@ watch(
     img {
       width: auto;
       height: auto;
+
       max-width: 100%;
       max-height: 100%;
+
       box-shadow: 0 0 50px #111;
     }
   }
@@ -195,11 +212,24 @@ watch(
       line-height: 1.25rem;
 
       &.summary {
-        max-height: 80%;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
 
-        /* todo: nice2have: scrolling if height > 80% */
+      &.rating {
+        display: flex;
+        align-items: center;
 
-        overflow: hidden;
+        b {
+          margin-right: 6px;
+        }
+
+        .stars {
+          display: flex;
+          align-items: center;
+
+          color: gold;
+        }
       }
     }
   }

@@ -6,16 +6,19 @@
       v-if="currentMedia"
       @touchstart.passive="handleTouchStart"
       @touchend.passive="handleTouchEnd"
-      @touchmove="handleTouchMove"
+      @touchmove.passive="handleTouchMove"
     >
-      <MediaCard :media="currentMedia" />
+      <MediaCard
+        :media="currentMedia"
+        v-model:meta-visible="showCurrentMediaMeta"
+      />
     </div>
     <div class="next-media" v-if="nextMedia">
       <MediaCard :media="nextMedia" />
     </div>
-    <div class="no-media" v-if="!currentMedia && !nextMedia">
+    <div class="no-media" v-if="hadMedia && !currentMedia && !nextMedia">
       <span class="icon"><PhTelevision /></span>
-      <span class="text">That's it!</span>
+      <span class="text">No media</span>
     </div>
   </div>
 </template>
@@ -34,6 +37,7 @@ const VOTE_ANGLE_NEGATIVE_THRESHOLD = -5;
 const VOTE_ANGLE_POSITIVE_THRESHOLD = 5;
 
 interface Props {
+  currentMediaMetaVisible: boolean;
   currentMedia: Media | null;
   nextMedia: Media | null;
   voteType: VoteType;
@@ -42,11 +46,32 @@ interface Props {
 interface Emits {
   (e: 'vote', v: VoteType): void;
   (e: 'update:voteType', v: VoteType): void;
+  (e: 'update:currentMediaMetaVisible', v: boolean): void;
 }
 
 const props = defineProps<Props>();
 
 const emits = defineEmits<Emits>();
+
+const hadMedia = ref(false);
+const showCurrentMediaMeta = ref(props.currentMediaMetaVisible);
+
+watch(
+  () => props.currentMediaMetaVisible,
+  (v) => (showCurrentMediaMeta.value = v)
+);
+
+watch(showCurrentMediaMeta, (v) => emits('update:currentMediaMetaVisible', v));
+
+const unwatchCurrentMedia = watch(
+  () => props.currentMedia,
+  (v) => {
+    if (v) {
+      hadMedia.value = true;
+      unwatchCurrentMedia();
+    }
+  }
+);
 
 const currentAngle = ref(0);
 
@@ -78,6 +103,10 @@ const currentMediaStyle = computed(() => ({
 }));
 
 const handleTouchStart = (e: TouchEvent) => {
+  if (props.currentMediaMetaVisible) {
+    return;
+  }
+
   screenWidth.value = window.screen.availWidth;
   touchStartX.value = e.touches.item(0)!.pageX;
 };
@@ -99,6 +128,10 @@ const voteTypeByAngle = computed(() => {
 });
 
 const handleTouchEnd = () => {
+  if (showCurrentMediaMeta.value) {
+    return;
+  }
+
   const vote = voteTypeByAngle.value;
 
   emits('update:voteType', vote);
@@ -109,8 +142,9 @@ const handleTouchEnd = () => {
 };
 
 const handleTouchMove = (e: TouchEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
+  if (showCurrentMediaMeta.value) {
+    return;
+  }
 
   const pX = e.touches.item(0)!.pageX;
   const sX = touchStartX.value;

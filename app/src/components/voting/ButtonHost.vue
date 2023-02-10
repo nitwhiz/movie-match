@@ -7,7 +7,7 @@
       <div class="button neutral" @click="handleVote(VoteType.NEUTRAL)">
         <PhShuffle weight="bold" />
       </div>
-      <div class="button neutral" @click="handleSeen">
+      <div class="button neutral-2" @click="handleSeen">
         <PhCheck weight="bold" />
       </div>
       <div class="button positive" @click="handleVote(VoteType.POSITIVE)">
@@ -67,6 +67,8 @@ const handleSeen = () => emits('seen');
 
       margin-right: calc($size / 4);
 
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+
       &:last-child {
         margin-right: 0;
       }
@@ -77,6 +79,10 @@ const handleSeen = () => emits('seen');
 
       &.neutral {
         background-color: #565ddb;
+      }
+
+      &.neutral-2 {
+        background-color: #8556db;
       }
 
       &.negative {
