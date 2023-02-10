@@ -62,7 +62,7 @@ export default class ApiClient {
   }
 
   public setMediaSeen(userId: string, mediaId: string): Promise<void> {
-    return this.axios.put(`/user/${userId}/media/${mediaId}/sinmimeen`);
+    return this.axios.put(`/user/${userId}/media/${mediaId}/seen`);
   }
 
   public getUsers(): Promise<User[]> {
