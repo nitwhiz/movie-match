@@ -1,0 +1,7 @@
+dist/
+node_modules/
+.gitignore
+.nvmrc
+.prettierrc.json
+Dockerfile
+README.md

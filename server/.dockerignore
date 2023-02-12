@@ -1,0 +1,4 @@
+.gitignore
+config.yaml.example
+Dockerfile
+README.md
