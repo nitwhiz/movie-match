@@ -1,10 +1,13 @@
 package provider
 
-import "gorm.io/gorm"
+import (
+	"github.com/nitwhiz/movie-match/server/pkg/model"
+	"gorm.io/gorm"
+)
 
 type Provider interface {
 	Init() error
-	Pull(db *gorm.DB) error
+	Pull(db *gorm.DB, mediaType model.MediaType, pages int) error
 }
 
 func GetByName(providerName string) Provider {

@@ -1,31 +1,26 @@
-package main
+package command
 
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/nitwhiz/movie-match/server/internal/config"
 	"github.com/nitwhiz/movie-match/server/internal/dbutils"
 	"github.com/nitwhiz/movie-match/server/internal/handler"
-	"log"
+	"github.com/urfave/cli/v2"
 )
 
-func main() {
-	if err := config.Init(); err != nil {
-		panic(err)
-	}
-
+func Server(context *cli.Context) error {
 	db, err := dbutils.GetConnection()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if err := dbutils.Migrate(db); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if err := dbutils.InitUsers(db); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	router := gin.Default()
@@ -45,9 +40,5 @@ func main() {
 
 	handler.AddUserMediaRecommendedRetrieveAll(router, db)
 
-	err = router.Run("0.0.0.0:6445")
-
-	if err != nil {
-		panic(err)
-	}
+	return router.Run("0.0.0.0:6445")
 }

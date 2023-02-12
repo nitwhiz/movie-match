@@ -1,6 +1,7 @@
 package dbutils
 
 import (
+	"fmt"
 	"github.com/nitwhiz/movie-match/server/pkg/model"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -12,7 +13,13 @@ import (
 )
 
 func GetConnection() (*gorm.DB, error) {
-	dsn := "host=localhost user=root password=root dbname=movie_match sslmode=disable TimeZone=Europe/Berlin"
+	dsn := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=movie_match sslmode=disable TimeZone=Europe/Berlin",
+		viper.GetString("database.host"),
+		viper.GetString("database.port"),
+		viper.GetString("database.user"),
+		viper.GetString("database.password"),
+	)
 
 	verboseLogger := logger.New(
 		log.New(),

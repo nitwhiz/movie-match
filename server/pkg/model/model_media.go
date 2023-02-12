@@ -5,13 +5,20 @@ import (
 	"time"
 )
 
-const MediaTypeMovie = "movie"
-const MediaTypeTv = "tv"
+type MediaType = string
+
+const MediaTypeMovie = MediaType("movie")
+const MediaTypeTv = MediaType("tv")
+
+var AvailableMediaTypes = []MediaType{
+	MediaTypeMovie,
+	MediaTypeTv,
+}
 
 type Media struct {
 	ID          uuid.UUID   `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	ForeignID   string      `gorm:"index:idx_foreign_unique,unique" json:"foreignId"`
-	Type        string      `gorm:"index:idx_media_unique,unique;index:idx_foreign_unique,unique" json:"type"`
+	Type        MediaType   `gorm:"type:string;index:idx_media_unique,unique;index:idx_foreign_unique,unique" json:"type"`
 	Provider    string      `gorm:"default:'unknown';index:idx_foreign_unique,unique" json:"provider"`
 	Title       string      `gorm:"index:idx_media_unique,unique" json:"title"`
 	Summary     string      `json:"summary"`

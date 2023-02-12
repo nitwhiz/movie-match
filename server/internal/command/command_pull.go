@@ -1,22 +1,32 @@
 package command
 
 import (
+	"errors"
 	"github.com/nitwhiz/movie-match/server/internal/dbutils"
 	"github.com/nitwhiz/movie-match/server/internal/provider"
+	"github.com/nitwhiz/movie-match/server/pkg/model"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"math"
+	"strings"
+	"sync"
 )
 
-func PullMedia(context *cli.Context) error {
-	providerName := context.Args().Get(0)
+func Pull(context *cli.Context) error {
+	providerName := strings.TrimSpace(context.Args().Get(0))
+
+	if providerName == "" {
+		return errors.New("no provider name specified")
+	}
+
 	mediaProvider := provider.GetByName(providerName)
 
 	if mediaProvider == nil {
-		log.Fatalf("media provider '%s' not found.", providerName)
+		return errors.New("media provider '" + providerName + "' not found.")
 	}
 
 	if err := mediaProvider.Init(); err != nil {
-		log.Fatalf(err.Error())
+		return err
 	}
 
 	db, err := dbutils.GetConnection()
@@ -25,5 +35,34 @@ func PullMedia(context *cli.Context) error {
 		return err
 	}
 
-	return mediaProvider.Pull(db)
+	mediaTypes := context.StringSlice(FlagPullType)
+
+	mtMap := map[model.MediaType]bool{}
+
+	for _, mt := range mediaTypes {
+		mtMap[mt] = true
+	}
+
+	pages := int(math.Max(0, float64(context.Int(FlagPullPages))))
+
+	wg := &sync.WaitGroup{}
+
+	var lastError error
+
+	for mt := range mtMap {
+		wg.Add(1)
+
+		go func(mediaType model.MediaType) {
+			defer wg.Done()
+
+			if err := mediaProvider.Pull(db, mediaType, pages); err != nil {
+				log.Error(err)
+				lastError = err
+			}
+		}(mt)
+	}
+
+	wg.Wait()
+
+	return lastError
 }

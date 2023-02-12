@@ -19,11 +19,11 @@ import (
 
 var tmdbProviderName = "tmdb"
 
-const (
-	pullDiscover = iota
-	pullPopular
-	pullTopRated
-)
+type pullType string
+
+const pullTypeDiscover = pullType("discover")
+const pullTypePopular = pullType("popular")
+const pullTypeTopRated = pullType("top_rated")
 
 const requestCooldownMin = time.Millisecond * 250
 const requestCooldownMax = time.Millisecond * 800
@@ -33,10 +33,12 @@ func getRequestCooldown() time.Duration {
 }
 
 type TMDBProvider struct {
-	api           *tmdb.TMDb
-	posterFetcher *poster.Fetcher
-	language      string
-	region        string
+	api              *tmdb.TMDb
+	posterFetcher    *poster.Fetcher
+	language         string
+	region           string
+	pulledTitlesLock *sync.Mutex
+	pulledTitles     map[string]bool
 }
 
 type genreInfo = struct {
@@ -45,7 +47,10 @@ type genreInfo = struct {
 }
 
 func NewTMDB() *TMDBProvider {
-	return &TMDBProvider{}
+	return &TMDBProvider{
+		pulledTitlesLock: &sync.Mutex{},
+		pulledTitles:     map[string]bool{},
+	}
 }
 
 func (p *TMDBProvider) Init() error {
@@ -90,98 +95,40 @@ func (p *TMDBProvider) Init() error {
 	return nil
 }
 
-func (p *TMDBProvider) Pull(db *gorm.DB) error {
-	pageCount := 10
+func (p *TMDBProvider) StartPull(wg *sync.WaitGroup, db *gorm.DB, mediaType model.MediaType, pullType pullType, pages int) {
+	defer wg.Done()
 
+	l := log.WithFields(log.Fields{
+		"type":     mediaType,
+		"provider": tmdbProviderName,
+		"subtype":  pullType,
+	})
+
+	if mediaType == model.MediaTypeTv {
+		if err := p.PullTv(l, db, pullType, pages); err != nil {
+			l.Error(err.Error())
+		}
+	} else if mediaType == model.MediaTypeMovie {
+		if err := p.PullMovie(l, db, pullType, pages); err != nil {
+			l.Error(err.Error())
+		}
+	}
+}
+
+func (p *TMDBProvider) Pull(db *gorm.DB, mediaType model.MediaType, pages int) error {
 	wg := &sync.WaitGroup{}
 
-	// tv
+	wg.Add(3)
 
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
-		if err := p.PullTv(db, pullDiscover, pageCount); err != nil {
-			log.WithFields(log.Fields{
-				"type":     model.MediaTypeTv,
-				"provider": tmdbProviderName,
-				"subtype":  "discover",
-			}).Error(err.Error())
-		}
-	}()
-
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
-		if err := p.PullTv(db, pullPopular, pageCount); err != nil {
-			log.WithFields(log.Fields{
-				"type":     model.MediaTypeTv,
-				"provider": tmdbProviderName,
-				"subtype":  "popular",
-			}).Error(err.Error())
-		}
-	}()
-
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
-		if err := p.PullTv(db, pullTopRated, pageCount); err != nil {
-			log.WithFields(log.Fields{
-				"type":     model.MediaTypeTv,
-				"provider": tmdbProviderName,
-				"subtype":  "top_rated",
-			}).Error(err.Error())
-		}
-	}()
-
-	// movie
-
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
-		if err := p.PullMovie(db, pullDiscover, pageCount); err != nil {
-			log.WithFields(log.Fields{
-				"type":     model.MediaTypeMovie,
-				"provider": tmdbProviderName,
-				"subtype":  "discover",
-			}).Error(err.Error())
-		}
-	}()
-
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
-		if err := p.PullMovie(db, pullPopular, pageCount); err != nil {
-			log.WithFields(log.Fields{
-				"type":     model.MediaTypeMovie,
-				"provider": tmdbProviderName,
-				"subtype":  "popular",
-			}).Error(err.Error())
-		}
-	}()
-
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
-		if err := p.PullMovie(db, pullTopRated, pageCount); err != nil {
-			log.WithFields(log.Fields{
-				"type":     model.MediaTypeMovie,
-				"provider": tmdbProviderName,
-				"subtype":  "top_rated",
-			}).Error(err.Error())
-		}
-	}()
-
-	time.Sleep(time.Second)
+	go p.StartPull(wg, db, mediaType, pullTypeDiscover, pages)
+	go p.StartPull(wg, db, mediaType, pullTypePopular, pages)
+	go p.StartPull(wg, db, mediaType, pullTypeTopRated, pages)
 
 	wg.Wait()
 
-	log.Info("done")
+	log.WithFields(log.Fields{
+		"type": mediaType,
+	}).Info("all media pulled")
 
 	return nil
 }
@@ -206,7 +153,7 @@ func ensureGenres(mediaGenres []genreInfo, db *gorm.DB) ([]model.Genre, error) {
 	return genres, nil
 }
 
-func (p *TMDBProvider) PullMovie(db *gorm.DB, pullType int, pages int) error {
+func (p *TMDBProvider) PullMovie(logger *log.Entry, db *gorm.DB, pullType pullType, pages int) error {
 	opts := map[string]string{
 		"sort_by":       "rating.desc",
 		"language":      p.language,
@@ -223,9 +170,9 @@ func (p *TMDBProvider) PullMovie(db *gorm.DB, pullType int, pages int) error {
 		var discover *tmdb.MoviePagedResults
 		var err error
 
-		if pullType == pullPopular {
+		if pullType == pullTypePopular {
 			discover, err = p.api.GetMoviePopular(opts)
-		} else if pullType == pullDiscover {
+		} else if pullType == pullTypeDiscover {
 			discover, err = p.api.DiscoverMovie(opts)
 		} else {
 			discover, err = p.api.GetMovieTopRated(opts)
@@ -238,38 +185,52 @@ func (p *TMDBProvider) PullMovie(db *gorm.DB, pullType int, pages int) error {
 		page = discover.Page
 		totalPages = int(math.Min(float64(pages), float64(discover.TotalPages)))
 
-		log.WithFields(log.Fields{
-			"type":       model.MediaTypeMovie,
-			"provider":   tmdbProviderName,
+		logger = logger.WithFields(log.Fields{
 			"page":       page,
 			"totalPages": totalPages,
-		}).Info("fetching discover page")
+		})
+
+		logger.Info("processing page")
 
 		for _, movieShort := range discover.Results {
-			logFields := log.Fields{
-				"type":     model.MediaTypeMovie,
-				"provider": tmdbProviderName,
-			}
-
 			foreignID := fmt.Sprintf("%d", movieShort.ID)
 
-			logFields["foreignID"] = foreignID
-			logFields["title"] = movieShort.Title
+			logger := logger.WithFields(log.Fields{
+				"foreignID": foreignID,
+				"title":     movieShort.Title,
+			})
+
+			p.pulledTitlesLock.Lock()
+
+			if p.pulledTitles[foreignID] {
+				p.pulledTitlesLock.Unlock()
+				logger.Info("skipping: title already pulled")
+				continue
+			}
+
+			p.pulledTitles[foreignID] = true
+			p.pulledTitlesLock.Unlock()
+
+			if movieShort.Overview == "" {
+				logger.Info("skipping: no short overview")
+				continue
+			}
 
 			movie, err := p.api.GetMovieInfo(movieShort.ID, map[string]string{
 				"language": "de",
 			})
 
-			if movie.Overview == "" {
-				log.WithFields(logFields).Info("skipping: no overview")
-				continue
-			} else {
-				log.WithFields(logFields).Info("fetching info")
-			}
-
 			if err != nil {
+				logger.Error(err)
 				return err
 			}
+
+			if movie.Overview == "" {
+				logger.Info("skipping: no overview")
+				continue
+			}
+
+			logger.Info("processing media")
 
 			genres, err := ensureGenres(movie.Genres, db)
 
@@ -303,23 +264,30 @@ func (p *TMDBProvider) PullMovie(db *gorm.DB, pullType int, pages int) error {
 				return err
 			}
 
-			logFields["id"] = mediaModel.ID
-			logFields["posterPath"] = movie.PosterPath
+			logger = logger.WithFields(log.Fields{
+				"id": mediaModel.ID,
+			})
+
+			logger.Info("downloading poster")
 
 			if err := p.posterFetcher.Download(movie.PosterPath, mediaModel.ID.String()); err != nil {
 				return err
 			}
 
-			log.WithFields(logFields).Info("done")
+			requestCooldown := getRequestCooldown()
 
-			time.Sleep(getRequestCooldown())
+			logger.WithFields(log.Fields{
+				"requestCooldown": fmt.Sprintf("%dms", int(requestCooldown/time.Millisecond)),
+			}).Info("media persisted")
+
+			time.Sleep(requestCooldown)
 		}
 	}
 
 	return nil
 }
 
-func (p *TMDBProvider) PullTv(db *gorm.DB, pullType int, pages int) error {
+func (p *TMDBProvider) PullTv(logger *log.Entry, db *gorm.DB, pullType pullType, pages int) error {
 	opts := map[string]string{
 		"sort_by":      "vote_average.desc",
 		"language":     p.language,
@@ -336,9 +304,9 @@ func (p *TMDBProvider) PullTv(db *gorm.DB, pullType int, pages int) error {
 		var discover *tmdb.TvPagedResults
 		var err error
 
-		if pullType == pullPopular {
+		if pullType == pullTypePopular {
 			discover, err = p.api.GetTvPopular(opts)
-		} else if pullType == pullDiscover {
+		} else if pullType == pullTypeDiscover {
 			discover, err = p.api.DiscoverTV(opts)
 		} else {
 			discover, err = p.api.GetTvTopRated(opts)
@@ -351,38 +319,52 @@ func (p *TMDBProvider) PullTv(db *gorm.DB, pullType int, pages int) error {
 		page = discover.Page
 		totalPages = int(math.Min(float64(pages), float64(discover.TotalPages)))
 
-		log.WithFields(log.Fields{
-			"type":       model.MediaTypeTv,
-			"provider":   tmdbProviderName,
+		logger = logger.WithFields(log.Fields{
 			"page":       page,
 			"totalPages": totalPages,
-		}).Info("fetching discover page")
+		})
+
+		logger.Info("processing page")
 
 		for _, tvShort := range discover.Results {
-			logFields := log.Fields{
-				"type":     model.MediaTypeTv,
-				"provider": tmdbProviderName,
-			}
-
 			foreignID := fmt.Sprintf("%d", tvShort.ID)
 
-			logFields["foreignID"] = foreignID
-			logFields["title"] = tvShort.Name
+			logger := logger.WithFields(log.Fields{
+				"foreignID": foreignID,
+				"title":     tvShort.Name,
+			})
+
+			p.pulledTitlesLock.Lock()
+
+			if p.pulledTitles[foreignID] {
+				p.pulledTitlesLock.Unlock()
+				logger.Info("skipping: title already pulled")
+				continue
+			}
+
+			p.pulledTitles[foreignID] = true
+			p.pulledTitlesLock.Unlock()
+
+			if tvShort.Overview == "" {
+				logger.Info("skipping: no short overview")
+				continue
+			}
 
 			tv, err := p.api.GetTvInfo(tvShort.ID, map[string]string{
 				"language": "de",
 			})
 
-			if tv.Overview == "" {
-				log.WithFields(logFields).Info("skipping: no overview")
-				continue
-			} else {
-				log.WithFields(logFields).Info("fetching info")
-			}
-
 			if err != nil {
+				logger.Error(err)
 				return err
 			}
+
+			if tv.Overview == "" {
+				logger.Info("skipping: no overview")
+				continue
+			}
+
+			logger.Info("processing media")
 
 			genres, err := ensureGenres(tv.Genres, db)
 
@@ -421,16 +403,23 @@ func (p *TMDBProvider) PullTv(db *gorm.DB, pullType int, pages int) error {
 				return err
 			}
 
-			logFields["id"] = mediaModel.ID
-			logFields["posterPath"] = tv.PosterPath
+			logger = logger.WithFields(log.Fields{
+				"id": mediaModel.ID,
+			})
+
+			logger.Info("downloading poster")
 
 			if err := p.posterFetcher.Download(tv.PosterPath, mediaModel.ID.String()); err != nil {
 				return err
 			}
 
-			log.WithFields(logFields).Info("done")
+			requestCooldown := getRequestCooldown()
 
-			time.Sleep(getRequestCooldown())
+			logger.WithFields(log.Fields{
+				"requestCooldown": fmt.Sprintf("%dms", int(requestCooldown/time.Millisecond)),
+			}).Info("media persisted")
+
+			time.Sleep(requestCooldown)
 		}
 	}
 
