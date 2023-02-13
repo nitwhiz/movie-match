@@ -12,6 +12,7 @@ import { Media } from '../model/Media';
 import { useApiClient } from '../composables/useApiClient';
 
 const route = useRoute();
+const { apiClient } = await useApiClient();
 
 const media = ref(null as Media | null);
 
@@ -19,11 +20,9 @@ onMounted(() => {
   const mediaId = (route.params.mediaId || null) as string | null;
 
   if (mediaId) {
-    useApiClient()
-      .getMedia(mediaId)
-      .then((mediaData) => {
-        media.value = mediaData;
-      });
+    apiClient.getMedia(mediaId).then((mediaData) => {
+      media.value = mediaData;
+    });
   }
 });
 </script>

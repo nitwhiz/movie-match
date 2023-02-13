@@ -52,9 +52,11 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emits = defineEmits<Emits>();
 
+const { apiClient } = await useApiClient();
+
 const showMeta = ref(props.metaVisible);
 
-const posterUrl = computed(() => useApiClient().getPosterUrl(props.media.id));
+const posterUrl = computed(() => apiClient.getPosterUrl(props.media.id));
 
 const ratingFilled = computed(() => Math.floor(props.media.rating / 20));
 const ratingHalf = computed(

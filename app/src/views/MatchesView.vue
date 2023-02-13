@@ -34,7 +34,7 @@ import { useMediaType } from '../composables/useMediaType';
 
 const userStore = useUserStore();
 const router = useRouter();
-const apiClient = useApiClient();
+const { apiClient } = await useApiClient();
 
 const { getMediaTypeLabelSingular } = useMediaType();
 

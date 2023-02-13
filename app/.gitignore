@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# environments
+public/env.*.json
+!public/env.template.json

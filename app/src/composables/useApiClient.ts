@@ -1,6 +1,14 @@
 import ApiClient from '../api/ApiClient';
-import { API_SERVER_BASE_URL } from '../common/Environment';
+import { useEnvironment } from './useEnvironment';
 
-const apiClient = new ApiClient(API_SERVER_BASE_URL);
+let currentApiClient: ApiClient | null = null;
 
-export const useApiClient = () => apiClient;
+export const useApiClient = async () => {
+  const { env } = await useEnvironment();
+
+  return {
+    apiClient: currentApiClient
+      ? currentApiClient
+      : new ApiClient(env.apiServerBaseUrl),
+  };
+};

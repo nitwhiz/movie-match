@@ -1,9 +1,15 @@
+database:
+  host: "db"
+  port: "5432"
+  user: "root"
+  password: "root"
+
 media_providers:
   tmdb:
-    api_key: "<your api key>"
+    api_key: "<tmdb api key>"
     poster_base_url: "https://image.tmdb.org/t/p/w780"
-    poster_fs_base_path: "/path/to/posters/"
+    poster_fs_base_path: "/tmp/posters/"
 
 users:
   - "Andy"
-  - "Lisa"
+  - "Nitwhiz"

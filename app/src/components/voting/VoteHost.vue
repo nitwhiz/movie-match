@@ -40,7 +40,7 @@ import ButtonHost from './ButtonHost.vue';
 const MEDIA_COUNT_REFRESH_THRESHOLD = 5;
 
 const userStore = useUserStore();
-const apiClient = useApiClient();
+const { apiClient } = await useApiClient();
 
 const matchNotificationVisible = ref(false);
 

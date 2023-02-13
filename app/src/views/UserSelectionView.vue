@@ -16,6 +16,7 @@ import { useApiClient } from '../composables/useApiClient';
 
 const userStore = useUserStore();
 const router = useRouter();
+const { apiClient } = await useApiClient();
 
 const users = ref([] as User[]);
 
@@ -25,9 +26,7 @@ const handleLogin = (u: User) => {
 };
 
 onMounted(() => {
-  useApiClient()
-    .getUsers()
-    .then((userList) => (users.value = userList));
+  apiClient.getUsers().then((userList) => (users.value = userList));
 });
 </script>
 
