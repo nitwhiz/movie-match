@@ -1,6 +1,7 @@
 package handler
 
 type MatchResult struct {
+	MediaID     string `gorm:"media_id" json:"mediaId"`
 	OtherUserID string `gorm:"other_user_id" json:"otherUserId"`
 }
 
