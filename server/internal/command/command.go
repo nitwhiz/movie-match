@@ -32,6 +32,11 @@ func GetApp() *cli.App {
 				Action:    Pull,
 			},
 			{
+				Name:   "purge",
+				Usage:  "Remove all tables",
+				Action: Purge,
+			},
+			{
 				Name:   "serve",
 				Usage:  "Start the server",
 				Action: Server,
