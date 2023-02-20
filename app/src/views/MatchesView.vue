@@ -26,15 +26,15 @@
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue';
 import { Match } from '../model/Match';
-import { useUserStore } from '../store/userStore';
 import { Media, MediaType } from '../model/Media';
 import { useRouter } from 'vue-router';
 import { useApiClient } from '../composables/useApiClient';
 import { useMediaType } from '../composables/useMediaType';
+import { useCurrentUser } from '../composables/useCurrentUser';
 
-const userStore = useUserStore();
 const router = useRouter();
-const { apiClient } = await useApiClient();
+const { currentUser } = useCurrentUser();
+const apiClient = await useApiClient().apiClient;
 
 const { getMediaTypeLabelSingular } = useMediaType();
 
@@ -43,7 +43,7 @@ const filterType = ref('all' as MediaType | 'all');
 const fetchMatches = () => {
   apiClient
     .getMatches(
-      userStore.currentUser?.id || '',
+      currentUser.value?.id || '',
       filterType.value !== 'all' ? filterType.value : null
     )
     .then(async (matches) => {
@@ -111,12 +111,6 @@ onMounted(() => {
         padding: 0.5rem;
 
         width: 100%;
-
-        background: transparent;
-        border: 0;
-        outline: 0;
-
-        color: white;
       }
     }
   }

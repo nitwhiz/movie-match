@@ -12,7 +12,7 @@ import { Media } from '../model/Media';
 import { useApiClient } from '../composables/useApiClient';
 
 const route = useRoute();
-const { apiClient } = await useApiClient();
+const apiClient = await useApiClient().apiClient;
 
 const media = ref(null as Media | null);
 

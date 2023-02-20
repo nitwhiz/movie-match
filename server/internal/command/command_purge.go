@@ -14,14 +14,16 @@ func dropTable(db *gorm.DB, tblr schema.Tabler) {
 }
 
 func dropTableByName(db *gorm.DB, tableName string) {
-	log.Info("dropping `" + tableName + "` ...")
+	log.WithFields(log.Fields{
+		"table": tableName,
+	}).Info("dropping table")
 
 	if err := db.Exec("DROP TABLE IF EXISTS " + tableName + " CASCADE").Error; err != nil {
 		log.Error(err)
 	}
 }
 
-func Purge(context *cli.Context) error {
+func Purge(_ *cli.Context) error {
 	db, err := dbutils.GetConnection()
 
 	if err != nil {
@@ -33,6 +35,7 @@ func Purge(context *cli.Context) error {
 	dropTable(db, &model.User{})
 	dropTable(db, &model.Genre{})
 	dropTable(db, &model.Media{})
+	dropTable(db, &model.UserToken{})
 
 	// todo: _should_ be dropped by cascade, but isn't?
 	dropTableByName(db, "media_genres")

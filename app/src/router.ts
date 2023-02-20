@@ -1,35 +1,44 @@
-import HomeView from './views/HomeView.vue';
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
-import UserSelectionView from './views/UserSelectionView.vue';
+import { useCurrentUser } from './composables/useCurrentUser';
+
+import HomeView from './views/HomeView.vue';
 import VoteView from './views/VoteView.vue';
 import MatchesView from './views/MatchesView.vue';
-import { useUserStore } from './store/userStore';
 import MediaView from './views/MediaView.vue';
+import LoginView from './views/LoginView.vue';
+
+export const RouteName = {
+  LOGIN: 'login',
+  HOME: 'home',
+  VOTE: 'vote',
+  MATCHES: 'matches',
+  MEDIA: 'media',
+} as const;
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    name: 'main',
-    component: UserSelectionView,
+    name: RouteName.LOGIN,
+    component: LoginView,
   },
   {
     path: '/home',
-    name: 'home',
+    name: RouteName.HOME,
     component: HomeView,
   },
   {
     path: '/vote',
-    name: 'vote',
+    name: RouteName.VOTE,
     component: VoteView,
   },
   {
     path: '/matches',
-    name: 'matches',
+    name: RouteName.MATCHES,
     component: MatchesView,
   },
   {
     path: '/media/:mediaId',
-    name: 'media',
+    name: RouteName.MEDIA,
     component: MediaView,
   },
 ];
@@ -40,13 +49,18 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  if (to.name !== 'main') {
-    const loggedIn = await useUserStore().loadCurrentUser();
+  const { currentUser, load } = useCurrentUser();
 
-    if (!loggedIn) {
-      next({ name: 'main' });
-      return;
-    }
+  await load();
+
+  if (to.name === 'login' && currentUser.value) {
+    next({ name: RouteName.HOME });
+    return;
+  }
+
+  if (to.name !== 'login' && !currentUser.value) {
+    next({ name: RouteName.LOGIN });
+    return;
   }
 
   next();

@@ -31,7 +31,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { Media } from '../../model/Media';
-import { useUserStore } from '../../store/userStore';
 import { useApiClient } from '../../composables/useApiClient';
 import { VoteType } from '../../model/Vote';
 import MediaSwipeHost from './MediaSwipeHost.vue';
@@ -39,8 +38,7 @@ import ButtonHost from './ButtonHost.vue';
 
 const MEDIA_COUNT_REFRESH_THRESHOLD = 5;
 
-const userStore = useUserStore();
-const { apiClient } = await useApiClient();
+const apiClient = await useApiClient().apiClient;
 
 const matchNotificationVisible = ref(false);
 
@@ -92,26 +90,22 @@ const fetchMedia = () => {
 
   isFetchingMedia.value = true;
 
-  apiClient
-    .getRecommendedMedia(userStore.currentUser?.id || '', mediaPageIndex.value)
-    .then((results) => {
-      mediaList.value.push(...results);
-      ++mediaPageIndex.value;
+  apiClient.getRecommendedMedia(mediaPageIndex.value).then((results) => {
+    mediaList.value.push(...results);
+    ++mediaPageIndex.value;
 
-      isFetchingMedia.value = false;
-    });
+    isFetchingMedia.value = false;
+  });
 };
 
 const sendVote = (media: Media, voteType: VoteType) => {
-  apiClient
-    .voteMedia(userStore.currentUser?.id || '', media.id, voteType)
-    .then((isMatch) => {
-      if (isMatch) {
-        matchNotificationVisible.value = true;
+  apiClient.voteMedia(media.id, voteType).then((isMatch) => {
+    if (isMatch) {
+      matchNotificationVisible.value = true;
 
-        window.setTimeout(() => (matchNotificationVisible.value = false), 2000);
-      }
-    });
+      window.setTimeout(() => (matchNotificationVisible.value = false), 2000);
+    }
+  });
 };
 
 const handleButtonVote = (voteType: VoteType) => {
@@ -130,10 +124,7 @@ const handleVote = (voteType: VoteType) => {
 
 const handleSeen = () => {
   if (currentMedia.value) {
-    apiClient.setMediaSeen(
-      userStore.currentUser?.id || '',
-      currentMedia.value?.id || ''
-    );
+    apiClient.setMediaSeen(currentMedia.value?.id || '');
   }
 
   showNextMedia();

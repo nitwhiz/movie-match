@@ -10,11 +10,11 @@ type Provider interface {
 	Pull(db *gorm.DB, mediaType model.MediaType, pages int) error
 }
 
-func GetByName(providerName string) Provider {
+func GetByName(providerName string) (Provider, error) {
 	switch providerName {
 	case tmdbProviderName:
 		return NewTMDB()
 	default:
-		return nil
+		return nil, nil
 	}
 }

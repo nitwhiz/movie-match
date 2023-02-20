@@ -38,6 +38,15 @@ button {
   font-family: 'Roboto', sans-serif;
 }
 
+input,
+select {
+  background: transparent;
+  border: 0;
+  outline: 0;
+
+  color: white;
+}
+
 h1,
 h2 {
   font-family: Pacifico, sans-serif;

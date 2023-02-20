@@ -1,14 +1,14 @@
 package command
 
 import (
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"github.com/nitwhiz/movie-match/server/internal/auth"
+	"github.com/nitwhiz/movie-match/server/internal/controller"
 	"github.com/nitwhiz/movie-match/server/internal/dbutils"
-	"github.com/nitwhiz/movie-match/server/internal/handler"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
-func Server(context *cli.Context) error {
+func Server(_ *cli.Context) error {
 	db, err := dbutils.GetConnection()
 
 	if err != nil {
@@ -23,22 +23,14 @@ func Server(context *cli.Context) error {
 		return err
 	}
 
-	router := gin.Default()
+	router, err := controller.Init(db)
 
-	router.Use(cors.Default())
+	if err != nil {
+		log.Error("Router Init Error: ", err)
+		return err
+	}
 
-	handler.AddMediaRetrieveAll(router, db)
-	handler.AddMediaRetrieveById(router, db)
-	handler.AddMediaRetrievePoster(router, db)
-
-	handler.AddUserRetrieveAll(router, db)
-
-	handler.AddUserMediaAddSeen(router, db)
-	handler.AddUserMediaVote(router, db)
-
-	handler.AddUserMatchRetrieveAll(router, db)
-
-	handler.AddUserMediaRecommendedRetrieveAll(router, db)
+	(auth.NewTokenCleanup(db)).Start()
 
 	return router.Run("0.0.0.0:6445")
 }

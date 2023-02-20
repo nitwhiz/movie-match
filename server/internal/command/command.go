@@ -33,13 +33,18 @@ func GetApp() *cli.App {
 			},
 			{
 				Name:   "purge",
-				Usage:  "Remove all tables",
+				Usage:  "Remove all tables in the database",
 				Action: Purge,
 			},
 			{
 				Name:   "serve",
 				Usage:  "Start the server",
 				Action: Server,
+			},
+			{
+				Name:   "hash",
+				Usage:  "Hash a string for usage as password in the user config",
+				Action: Hash,
 			},
 		},
 	}
