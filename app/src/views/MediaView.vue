@@ -1,6 +1,6 @@
 <template>
   <div class="media-view">
-    <MediaCard v-if="media" :media="media" />
+    <MediaCard v-if="media" :media="media" v-model:meta-visible="metaVisible" />
   </div>
 </template>
 
@@ -15,6 +15,7 @@ const route = useRoute();
 const apiClient = await useApiClient().apiClient;
 
 const media = ref(null as Media | null);
+const metaVisible = ref(true);
 
 onMounted(() => {
   const mediaId = (route.params.mediaId || null) as string | null;
