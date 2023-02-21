@@ -18,7 +18,10 @@ interface Token {
   userId: string;
 }
 
+const ACCESS_TOKEN_EXPIRY_THRESHOLD = 15 * 60 * 1000;
+
 const ACCESS_TOKEN_COOKIE_NAME = 'jwt';
+const ACCESS_TOKEN_COOKIE_EXPIRY_THRESHOLD = 15 * 60 * 1000;
 
 export default class ApiClient extends EventEmitter<{
   unauthorized: () => void;
@@ -32,6 +35,8 @@ export default class ApiClient extends EventEmitter<{
 
   private accessTokenExpiry: number;
 
+  private tokenRefreshPromise: Promise<boolean> | null;
+
   constructor(baseUrl: string) {
     super();
 
@@ -43,6 +48,7 @@ export default class ApiClient extends EventEmitter<{
 
     this.accessToken = '';
     this.accessTokenExpiry = 0;
+    this.tokenRefreshPromise = null;
   }
 
   private setAccessToken(token: string) {
@@ -53,7 +59,9 @@ export default class ApiClient extends EventEmitter<{
     this.axios.defaults.headers.common['Content-Type'] = 'application/json';
 
     Cookies.set(ACCESS_TOKEN_COOKIE_NAME, token, {
-      expires: new Date(this.accessTokenExpiry + 15 * 60 * 1000),
+      expires: new Date(
+        this.accessTokenExpiry + ACCESS_TOKEN_COOKIE_EXPIRY_THRESHOLD
+      ),
       sameSite: 'Strict',
     });
   }
@@ -68,18 +76,28 @@ export default class ApiClient extends EventEmitter<{
     return this;
   }
 
-  private async checkAccessToken(): Promise<void> {
-    if (this.accessToken === '' || this.accessTokenExpiry === 0) {
-      this.emit('unauthorized');
-      return;
+  private async checkAccessToken(): Promise<boolean> {
+    if (this.tokenRefreshPromise) {
+      return this.tokenRefreshPromise;
     }
 
-    // renew token 5 min before it's invalid
-    if (Date.now() >= this.accessTokenExpiry - 5 * 60 * 1000) {
-      if (!(await this.refreshToken())) {
-        this.emit('unauthorized');
-      }
+    if (this.accessToken === '' || this.accessTokenExpiry === 0) {
+      this.emit('unauthorized');
+      return true;
     }
+
+    // renew token 15 min before it's invalid
+    if (Date.now() >= this.accessTokenExpiry - ACCESS_TOKEN_EXPIRY_THRESHOLD) {
+      if (!this.tokenRefreshPromise) {
+        this.tokenRefreshPromise = this.refreshToken();
+      }
+
+      return this.tokenRefreshPromise.finally(
+        () => (this.tokenRefreshPromise = null)
+      );
+    }
+
+    return true;
   }
 
   public login(login: Login): Promise<void> {
@@ -145,8 +163,15 @@ export default class ApiClient extends EventEmitter<{
     return this.axios.get<Media>(`/media/${mediaId}`).then(({ data }) => data);
   }
 
-  public getPosterUrl(mediaId: string): string {
-    return `${this.baseUrl}/media/${mediaId}/poster`;
+  public async getPosterBlobUrl(mediaId: string): Promise<string> {
+    await this.checkAccessToken();
+
+    return this.axios
+      .get<Blob>(`/media/${mediaId}/poster`, {
+        responseType: 'blob',
+      })
+      .then(({ data }) => data)
+      .then((blob) => URL.createObjectURL(blob));
   }
 
   public async getRecommendedMedia(

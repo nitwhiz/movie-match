@@ -63,8 +63,7 @@ func GetJWTMiddleware(db *gorm.DB) (*jwt.GinJWTMiddleware, error) {
 		Timeout:          time.Hour,
 		MaxRefresh:       time.Hour,
 		IdentityKey:      jwtIdentityKey,
-		// we still need cookies for movie/tv-show posters
-		TokenLookup: "header: Authorization, cookie: jwt",
+		TokenLookup:      "header: Authorization",
 		Authenticator: func(c *gin.Context) (interface{}, error) {
 			var loginParams login
 

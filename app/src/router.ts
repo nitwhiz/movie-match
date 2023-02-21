@@ -6,6 +6,7 @@ import VoteView from './views/VoteView.vue';
 import MatchesView from './views/MatchesView.vue';
 import MediaView from './views/MediaView.vue';
 import LoginView from './views/LoginView.vue';
+import { freeAllMediaBlobUrls } from './api/PosterBlob';
 
 export const RouteName = {
   LOGIN: 'login',
@@ -62,6 +63,8 @@ router.beforeEach(async (to, from, next) => {
     next({ name: RouteName.LOGIN });
     return;
   }
+
+  freeAllMediaBlobUrls();
 
   next();
 });

@@ -12,7 +12,11 @@
     </div>
     <div class="match" v-for="m in matchList" @click="showMedia(m.media)">
       <div class="poster">
-        <img :src="getMediaPosterSrc(m.media)" :alt="m.media.title" />
+        <img
+          v-if="mediaPosters[m.media.id]"
+          :src="mediaPosters[m.media.id]"
+          :alt="m.media.title"
+        />
       </div>
       <div class="details">
         <b class="name">{{ m.media.title }}</b>
@@ -31,6 +35,7 @@ import { useRouter } from 'vue-router';
 import { useApiClient } from '../composables/useApiClient';
 import { useMediaType } from '../composables/useMediaType';
 import { useCurrentUser } from '../composables/useCurrentUser';
+import { getMediaPosterBlobUrl } from '../api/PosterBlob';
 
 const router = useRouter();
 const { currentUser } = useCurrentUser();
@@ -39,6 +44,8 @@ const apiClient = await useApiClient().apiClient;
 const { getMediaTypeLabelSingular } = useMediaType();
 
 const filterType = ref('all' as MediaType | 'all');
+
+const mediaPosters = ref({} as Record<string, string>);
 
 const fetchMatches = () => {
   apiClient
@@ -51,9 +58,12 @@ const fetchMatches = () => {
 
       if (matches) {
         for (const match of matches) {
+          // todo: request pooling?
           const media = await apiClient.getMedia(match.mediaId);
 
           matchList.value.push({ match, media });
+
+          mediaPosters.value[media.id] = await getMediaPosterBlobUrl(media.id);
         }
       }
     });
@@ -74,8 +84,6 @@ const showMedia = (media: Media) => {
     },
   });
 };
-
-const getMediaPosterSrc = (media: Media) => apiClient.getPosterUrl(media.id);
 
 const getGenres = (media: Media) => media.genres.map((g) => g.name).join(', ');
 

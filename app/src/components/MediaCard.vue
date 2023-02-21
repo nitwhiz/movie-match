@@ -7,7 +7,7 @@
     @touchend.passive="handleTouchEnd"
   >
     <div class="image-holder">
-      <img :src="posterUrl" alt="" />
+      <img v-if="currentPosterUrl" :src="currentPosterUrl" alt="" />
     </div>
     <div class="meta-overlay" v-if="showMeta">
       <h3>{{ props.media.title }}</h3>
@@ -33,9 +33,12 @@
 <script lang="ts" setup>
 import { PhStar, PhStarHalf } from '@phosphor-icons/vue';
 import { Media } from '../model/Media';
-import { computed, ref, watch } from 'vue';
-import { useApiClient } from '../composables/useApiClient';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useMediaType } from '../composables/useMediaType';
+import {
+  freeMediaPosterBlobUrl,
+  getMediaPosterBlobUrl,
+} from '../api/PosterBlob';
 
 interface Props {
   media: Media;
@@ -52,11 +55,19 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emits = defineEmits<Emits>();
 
-const apiClient = await useApiClient().apiClient;
-
 const showMeta = ref(props.metaVisible);
 
-const posterUrl = computed(() => apiClient.getPosterUrl(props.media.id));
+const currentPosterUrl = ref(null as string | null);
+
+const updatePoster = (previousMedia: Media | null = null) => {
+  if (previousMedia && props.media.id !== previousMedia.id) {
+    freeMediaPosterBlobUrl(previousMedia.id);
+  }
+
+  getMediaPosterBlobUrl(props.media.id).then((posterBlobUrl) => {
+    currentPosterUrl.value = posterBlobUrl;
+  });
+};
 
 const ratingFilled = computed(() => Math.floor(props.media.rating / 20));
 const ratingHalf = computed(
@@ -88,9 +99,13 @@ const inTouch = ref(false);
 const isTap = ref(false);
 const firstTouch = ref(null as Touch | null);
 
-const cardStyle = computed(() => ({
-  backgroundImage: `url(${posterUrl.value})`,
-}));
+const cardStyle = computed(() => {
+  return currentPosterUrl.value
+    ? {
+        backgroundImage: `url(${currentPosterUrl.value})`,
+      }
+    : {};
+});
 
 const { getMediaTypeLabelSingular } = useMediaType();
 
@@ -100,7 +115,10 @@ const mediaTypeLabel = computed(() =>
 
 watch(
   () => props.media,
-  () => emits('update:metaVisible', false)
+  (_, oldMedia) => {
+    emits('update:metaVisible', false);
+    updatePoster(oldMedia);
+  }
 );
 
 watch(
@@ -139,6 +157,10 @@ const handleTouchEnd = () => {
   isTap.value = false;
   firstTouch.value = null;
 };
+
+onMounted(() => {
+  updatePoster();
+});
 </script>
 
 <style lang="scss" scoped>

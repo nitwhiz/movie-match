@@ -6,7 +6,7 @@ Helping you find matching movies for you and your SO since 2023!
 
 ### Configuration
 
-Example `config.yaml`, suitable for usage with the `docker-compose.yml` from the next section:
+Example `config.yml`, suitable for usage with the `docker-compose.yml` from the next section:
 
 ```yaml
 database:
@@ -42,7 +42,7 @@ login:
 To generate passwords for your user config, run the `hash` command:
 
 ```shell
- docker run --rm -it ghcr.io/nitwhiz/movie-match-server:latest hash 
+docker run --rm -it ghcr.io/nitwhiz/movie-match-server:latest hash 
 ```
 
 You should generate passwords with the same version of the server that's going to consume the password.
@@ -70,7 +70,7 @@ services:
   server:
     image: ghcr.io/nitwhiz/movie-match-server:latest
     volumes:
-      - "./config.yaml:/opt/movie-match/config.yaml:ro" # mount your config
+      - "./config.yml:/opt/movie-match/config.yml:ro" # mount your config
       - "server_data_posters:/opt/movie-match/posters" # mount a directory to store media posters
     ports:
       - "6445:6445"
