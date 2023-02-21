@@ -2,15 +2,20 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/nitwhiz/movie-match/server/internal/auth"
 	"github.com/nitwhiz/movie-match/server/pkg/model"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"net/http"
 )
 
 type meRecommendationParams struct {
-	Page int `form:"page"`
+	BelowScore string `form:"belowScore"`
+}
+
+type scoreMedia = struct {
+	model.Media
+	Score string `json:"score"`
 }
 
 func meGetAllRecommendations(db *gorm.DB) gin.HandlerFunc {
@@ -35,22 +40,105 @@ func meGetAllRecommendations(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var media []model.Media
+		var media []*scoreMedia
 
 		pageSize := 10
 
 		db.
-			Preload(clause.Associations).
-			Select("m.*").
+			Select("m.*, c.score").
 			Table((&model.Media{}).TableName()+" AS m").
-			Joins("LEFT JOIN "+(&model.Vote{}).TableName()+" AS v ON m.id = v.media_id AND v.user_id = ?", user.ID).
-			Joins("LEFT JOIN "+(&model.MediaSeen{}).TableName()+" AS s ON m.id = s.media_id AND s.user_id = ?", user.ID).
-			Where("s.id IS NULL").
-			Where("v.id IS NULL OR v.type = 'neutral'").
-			Order("m.release_date DESC, m.rating DESC").
-			Offset(recommendationParams.Page * pageSize).
+			Joins("LEFT JOIN "+(&model.Vote{}).TableName()+" v ON m.id = v.media_id AND v.user_id != ?", user.ID).
+			Joins(`CROSS JOIN LATERAL (VALUES (
+				LEAST(
+						   (
+							   ABS(HASHTEXT(m.id::text)) / 2147483647.0
+							   )
+						   * (
+							   CASE
+								   WHEN v.type = 'positive' THEN 33
+								   WHEN v.type = 'neutral' THEN 60
+								   WHEN v.type = 'negative' THEN 75
+								   WHEN v.type IS NULL THEN 100
+								   END
+							   )
+					   + (
+							   CASE
+								   WHEN v.type = 'positive' THEN 67
+								   WHEN v.type = 'neutral' THEN 40
+								   WHEN v.type = 'negative' THEN 0
+								   WHEN v.type IS NULL THEN 0
+								   END
+							)
+				, 100.0
+				)
+			)) c(score)`).
+			Joins("LEFT JOIN "+(&model.Vote{}).TableName()+" v2 ON m.id = v2.media_id AND v2.user_id = ?", user.ID).
+			Where("(v2.type IS NULL OR v2.type = 'neutral') AND c.score < ?", recommendationParams.BelowScore).
+			Order("c.score DESC, v.type DESC").
 			Limit(pageSize).
 			Find(&media)
+
+		// begin workaround for incorrect preloading
+		// see https://github.com/go-gorm/gorm/pull/6067
+
+		uniqueMediaIds := map[uuid.UUID]struct{}{}
+		mediaMap := map[uuid.UUID]*scoreMedia{}
+
+		for _, m := range media {
+			uniqueMediaIds[m.ID] = struct{}{}
+			m.Genres = []model.Genre{}
+
+			func(m *scoreMedia) {
+				mediaMap[m.ID] = m
+			}(m)
+		}
+
+		mediaIds := make([]uuid.UUID, len(uniqueMediaIds))
+
+		i := 0
+
+		for mid := range uniqueMediaIds {
+			mediaIds[i] = mid
+			i += 1
+		}
+
+		var mediaGenres []struct {
+			MediaID uuid.UUID `gorm:"media_id"`
+			GenreID uuid.UUID `gorm:"genre_id"`
+		}
+
+		db.Table("media_genres").Where("media_id IN ?", mediaIds).Find(&mediaGenres)
+
+		uniqueGenreIds := map[uuid.UUID]struct{}{}
+
+		for _, g := range mediaGenres {
+			uniqueGenreIds[g.GenreID] = struct{}{}
+		}
+
+		genreIds := make([]uuid.UUID, len(uniqueGenreIds))
+
+		i = 0
+
+		for gid := range uniqueGenreIds {
+			genreIds[i] = gid
+			i += 1
+		}
+
+		var genres []*model.Genre
+
+		db.Where("id IN ?", genreIds).Find(&genres)
+
+		genreMap := map[uuid.UUID]*model.Genre{}
+
+		for _, g := range genres {
+			genreMap[g.ID] = g
+		}
+
+		for _, m := range mediaGenres {
+			mediaMap[m.MediaID].Genres = append(mediaMap[m.MediaID].Genres, *(genreMap[m.GenreID]))
+		}
+
+		// end workaround for incorrect preloading
 
 		context.JSON(http.StatusOK, gin.H{
 			"results": media,

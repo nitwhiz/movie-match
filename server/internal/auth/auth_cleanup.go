@@ -35,7 +35,7 @@ func (c *TokenCleanup) Purge() {
 
 func (c *TokenCleanup) Start() {
 	c.wg.Add(1)
-	timer := time.NewTicker(time.Second * 10)
+	timer := time.NewTicker(time.Minute)
 
 	go func() {
 		defer c.wg.Done()

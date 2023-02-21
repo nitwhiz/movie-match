@@ -20,4 +20,5 @@ export interface Media {
   releaseDate: string;
   rating: number;
   createdAt: string;
+  score?: string;
 }

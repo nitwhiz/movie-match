@@ -196,6 +196,7 @@ func mediaVote(db *gorm.DB) gin.HandlerFunc {
 			Type:  voteParams.VoteType,
 		}
 
+		// todo: only update votes table
 		if err := db.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "user_id"}, {Name: "media_id"}},
 			UpdateAll: true,

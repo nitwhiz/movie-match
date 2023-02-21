@@ -46,7 +46,7 @@ const currentVoteType = ref(VoteType.NEUTRAL);
 
 const isFetchingMedia = ref(false);
 const mediaList = ref([] as Media[]);
-const mediaPageIndex = ref(0);
+const belowScore = ref('100');
 const mediaIndex = ref(0);
 
 const currentMedia = computed(() => mediaList.value[mediaIndex.value] || null);
@@ -90,9 +90,12 @@ const fetchMedia = () => {
 
   isFetchingMedia.value = true;
 
-  apiClient.getRecommendedMedia(mediaPageIndex.value).then((results) => {
+  apiClient.getRecommendedMedia(belowScore.value).then((results) => {
     mediaList.value.push(...results);
-    ++mediaPageIndex.value;
+
+    const lastResult = results.pop();
+
+    belowScore.value = lastResult?.score || '100';
 
     isFetchingMedia.value = false;
   });
@@ -126,8 +129,6 @@ const handleSeen = () => {
   if (currentMedia.value) {
     apiClient.setMediaSeen(currentMedia.value?.id || '');
   }
-
-  showNextMedia();
 };
 
 onMounted(() => {

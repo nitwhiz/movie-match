@@ -149,11 +149,13 @@ export default class ApiClient extends EventEmitter<{
     return `${this.baseUrl}/media/${mediaId}/poster`;
   }
 
-  public async getRecommendedMedia(page: number = 0): Promise<Media[]> {
+  public async getRecommendedMedia(
+    belowScore: string = '100'
+  ): Promise<Media[]> {
     await this.checkAccessToken();
 
     return this.axios
-      .get<Results<Media>>(`/me/recommended?page=${page}`)
+      .get<Results<Media>>(`/me/recommended?belowScore=${belowScore}`)
       .then(({ data }) => data)
       .then(({ results }) => results);
   }
