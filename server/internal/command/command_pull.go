@@ -19,7 +19,7 @@ func Pull(context *cli.Context) error {
 		return errors.New("no provider name specified")
 	}
 
-	mediaProvider, err := provider.GetByName(providerName)
+	mediaProvider, err := provider.GetMediaProviderByName(providerName)
 
 	if err != nil {
 		return err
