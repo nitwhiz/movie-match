@@ -21,4 +21,5 @@ export interface Media {
   rating: number;
   createdAt: string;
   score?: string;
+  seen?: boolean;
 }

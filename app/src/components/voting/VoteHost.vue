@@ -23,7 +23,11 @@
       v-if="currentMedia"
       :class="[hideButtons ? 'hidden' : 'visible']"
     >
-      <ButtonHost @vote="handleButtonVote" @seen="handleSeen" />
+      <ButtonHost
+        @vote="handleButtonVote"
+        @seen="handleSeen"
+        :seen="currentMedia.seen || false"
+      />
     </div>
   </div>
 </template>

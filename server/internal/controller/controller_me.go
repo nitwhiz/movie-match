@@ -4,7 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/nitwhiz/movie-match/server/internal/auth"
+	"github.com/nitwhiz/movie-match/server/internal/dbutils"
 	"github.com/nitwhiz/movie-match/server/pkg/model"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
 )
@@ -13,9 +15,10 @@ type meRecommendationParams struct {
 	BelowScore string `form:"belowScore"`
 }
 
-type scoreMedia = struct {
+type userMedia = struct {
 	model.Media
 	Score string `json:"score"`
+	Seen  bool   `json:"seen"`
 }
 
 func meGetAllRecommendations(db *gorm.DB) gin.HandlerFunc {
@@ -40,7 +43,7 @@ func meGetAllRecommendations(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var media []*scoreMedia
+		var media []*userMedia
 
 		pageSize := 10
 
@@ -81,15 +84,29 @@ func meGetAllRecommendations(db *gorm.DB) gin.HandlerFunc {
 		// begin workaround for incorrect preloading
 		// see https://github.com/go-gorm/gorm/pull/6067
 
+		// todo: all of this can be thrown out by using jsonapi relationships
+		// -> let client request what it needs to display this information
+
 		uniqueMediaIds := map[uuid.UUID]struct{}{}
-		mediaMap := map[uuid.UUID]*scoreMedia{}
+		mediaMap := map[uuid.UUID]*userMedia{}
 
 		for _, m := range media {
-			uniqueMediaIds[m.ID] = struct{}{}
-			m.Genres = []model.Genre{}
+			func(m *userMedia) {
+				uniqueMediaIds[m.ID] = struct{}{}
 
-			func(m *scoreMedia) {
 				mediaMap[m.ID] = m
+				mediaMap[m.ID].Genres = []model.Genre{}
+
+				seenMedia, err := dbutils.FirstModelOrNil[model.MediaSeen](db, &model.MediaSeen{MediaID: m.ID})
+
+				if err != nil {
+					log.Error(err)
+					return
+				}
+
+				if seenMedia != nil {
+					mediaMap[m.ID].Seen = true
+				}
 			}(m)
 		}
 

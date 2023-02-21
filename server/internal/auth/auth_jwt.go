@@ -44,7 +44,7 @@ func CheckTokenActivity(context *gin.Context, db *gorm.DB) (bool, *model.UserTok
 		return false, nil, nil
 	}
 
-	userToken, err := dbutils.FirstOrNil[model.UserToken](db.Where(model.UserToken{Token: token}))
+	userToken, err := dbutils.FirstOrNil[model.UserToken](db.Where(&model.UserToken{Token: token}))
 
 	if userToken == nil || err != nil {
 		context.AbortWithStatus(http.StatusUnauthorized)

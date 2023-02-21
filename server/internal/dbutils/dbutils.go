@@ -79,7 +79,7 @@ func Migrate(db *gorm.DB) error {
 	)
 }
 
-func FirstOrNil[ModelType interface{}](db *gorm.DB) (*ModelType, error) {
+func first[ModelType interface{}](db *gorm.DB) (*ModelType, error) {
 	var record ModelType
 
 	tx := db.Limit(1).Find(&record)
@@ -91,14 +91,14 @@ func FirstOrNil[ModelType interface{}](db *gorm.DB) (*ModelType, error) {
 	return &record, tx.Error
 }
 
+func FirstOrNil[ModelType interface{}](db *gorm.DB) (*ModelType, error) {
+	return first[ModelType](db)
+}
+
+func FirstModelOrNil[ModelType interface{}](db *gorm.DB, where *ModelType) (*ModelType, error) {
+	return FirstOrNil[ModelType](db.Where(where))
+}
+
 func FirstByIdOrNil[ModelType interface{}](db *gorm.DB, modelId string) (*ModelType, error) {
-	var record ModelType
-
-	tx := db.Where("id = ?", modelId).Limit(1).Find(&record)
-
-	if tx.RowsAffected == 0 {
-		return nil, tx.Error
-	}
-
-	return &record, tx.Error
+	return first[ModelType](db.Where("id = ?", modelId))
 }
