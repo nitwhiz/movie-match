@@ -8,7 +8,7 @@ import (
 type Genre struct {
 	ID        uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	Name      string    `gorm:"unique" json:"name"`
-	Media     []Media   `gorm:"many2many:media_genres" json:"media"`
+	Media     []Media   `gorm:"many2many:media_genres" json:"-"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 

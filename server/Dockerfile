@@ -18,4 +18,4 @@ VOLUME /opt/movie-match/posters
 
 ENTRYPOINT [ "/opt/movie-match/movie-match" ]
 
-CMD [ "serve" ]
+CMD [ "serve", "--web", "--with-token-cleanup", "--with-media-auto-pull" ]

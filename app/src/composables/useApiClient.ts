@@ -1,14 +1,12 @@
 import ApiClient from '../api/ApiClient';
 import { useEnvironment } from './useEnvironment';
 
-let currentApiClient: ApiClient | null = null;
+const currentApiClient: Promise<ApiClient> = (async () => {
+  const env = await useEnvironment().environment;
 
-export const useApiClient = async () => {
-  const { env } = await useEnvironment();
+  return new ApiClient(env.apiServerBaseUrl).loadAccessTokenFromCookie();
+})();
 
-  return {
-    apiClient: currentApiClient
-      ? currentApiClient
-      : new ApiClient(env.apiServerBaseUrl),
-  };
+export const useApiClient = () => {
+  return { apiClient: currentApiClient };
 };

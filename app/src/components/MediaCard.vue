@@ -52,7 +52,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emits = defineEmits<Emits>();
 
-const { apiClient } = await useApiClient();
+const apiClient = await useApiClient().apiClient;
 
 const showMeta = ref(props.metaVisible);
 

@@ -5,9 +5,7 @@ node_modules/
 .gitignore
 .nvmrc
 .prettierrc.json
-config.yaml.example
 Dockerfile
-README.md
 
 public/env.*.json
 !public/env.template.json

@@ -2,36 +2,25 @@ package dbutils
 
 import (
 	"fmt"
+	"github.com/nitwhiz/movie-match/server/internal/config"
 	"github.com/nitwhiz/movie-match/server/pkg/model"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"gorm.io/gorm/logger"
-	"time"
 )
 
 func GetConnection() (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=movie_match sslmode=disable TimeZone=Europe/Berlin",
-		viper.GetString("database.host"),
-		viper.GetString("database.port"),
-		viper.GetString("database.user"),
-		viper.GetString("database.password"),
-	)
-
-	verboseLogger := logger.New(
-		log.New(),
-		logger.Config{
-			SlowThreshold: time.Second,
-			LogLevel:      logger.Error,
-			Colorful:      true,
-		},
+		config.C.Database.Host,
+		config.C.Database.Port,
+		config.C.Database.User,
+		config.C.Database.Password,
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: verboseLogger,
+		Logger: NewLogger(config.C.Debug),
 	})
 
 	if err != nil {
@@ -43,17 +32,27 @@ func GetConnection() (*gorm.DB, error) {
 }
 
 func InitUsers(db *gorm.DB) error {
-	users := viper.GetStringSlice("users")
+	var usernames []string
 
-	for _, userName := range users {
-		log.Infof("ensuring user %s", userName)
+	for _, user := range config.C.Login.Users {
+		log.Infof("ensuring user %s", user.Username)
 
 		db.Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "name"}},
-			DoNothing: true,
+			Columns:   []clause.Column{{Name: "username"}, {Name: "display_name"}},
+			UpdateAll: true,
 		}).Create(&model.User{
-			Name: userName,
+			DisplayName: user.DisplayName,
+			Username:    user.Username,
+			Password:    user.Password,
 		})
+
+		usernames = append(usernames, user.Username)
+	}
+
+	if len(usernames) > 0 {
+		if err := db.Not(map[string]interface{}{"username": usernames}).Delete(&model.User{}).Error; err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -62,13 +61,14 @@ func InitUsers(db *gorm.DB) error {
 func Migrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&model.User{},
+		&model.UserToken{},
 		&model.Media{},
 		&model.Vote{},
 		&model.MediaSeen{},
 	)
 }
 
-func FindOrNil[ModelType interface{}](db *gorm.DB) (*ModelType, error) {
+func first[ModelType interface{}](db *gorm.DB) (*ModelType, error) {
 	var record ModelType
 
 	tx := db.Limit(1).Find(&record)
@@ -80,14 +80,14 @@ func FindOrNil[ModelType interface{}](db *gorm.DB) (*ModelType, error) {
 	return &record, tx.Error
 }
 
-func FindByIdOrNil[ModelType interface{}](db *gorm.DB, modelId string) (*ModelType, error) {
-	var record ModelType
+func FirstOrNil[ModelType interface{}](db *gorm.DB) (*ModelType, error) {
+	return first[ModelType](db)
+}
 
-	tx := db.Where("id = ?", modelId).Limit(1).Find(&record)
+func FirstModelOrNil[ModelType interface{}](db *gorm.DB, where *ModelType) (*ModelType, error) {
+	return FirstOrNil[ModelType](db.Where(where))
+}
 
-	if tx.RowsAffected == 0 {
-		return nil, tx.Error
-	}
-
-	return &record, tx.Error
+func FirstByIdOrNil[ModelType interface{}](db *gorm.DB, modelId string) (*ModelType, error) {
+	return first[ModelType](db.Where("id = ?", modelId))
 }

@@ -3,15 +3,18 @@ package provider
 import (
 	"errors"
 	"fmt"
-	"github.com/nitwhiz/movie-match/server/internal/poster"
+	"github.com/nitwhiz/movie-match/server/internal/config"
 	"github.com/nitwhiz/movie-match/server/pkg/model"
 	"github.com/ryanbradynd05/go-tmdb"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"io"
 	"math"
 	"math/rand"
+	"net/http"
+	"os"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -34,11 +37,9 @@ func getRequestCooldown() time.Duration {
 
 type TMDBProvider struct {
 	api              *tmdb.TMDb
-	posterFetcher    *poster.Fetcher
-	language         string
-	region           string
 	pulledTitlesLock *sync.Mutex
 	pulledTitles     map[string]bool
+	c                *config.TMDBProviderConfig
 }
 
 type genreInfo = struct {
@@ -46,53 +47,72 @@ type genreInfo = struct {
 	Name string
 }
 
-func NewTMDB() *TMDBProvider {
+func NewTMDB() (*TMDBProvider, error) {
+	if config.C.MediaProviders.TMDB == nil {
+		return nil, errors.New("tmdb provider is not configured")
+	}
+
 	return &TMDBProvider{
 		pulledTitlesLock: &sync.Mutex{},
 		pulledTitles:     map[string]bool{},
-	}
+		c:                config.C.MediaProviders.TMDB,
+	}, nil
 }
 
 func (p *TMDBProvider) Init() error {
-	posterFsBasePath := strings.TrimRight(viper.GetString("media_providers.tmdb.poster_fs_base_path"), "/")
-
-	if posterFsBasePath == "" {
-		return errors.New("tmdb poster_fs_base_path not configured")
-	}
-
-	posterBaseUrl := strings.TrimRight(viper.GetString("media_providers.tmdb.poster_base_url"), "/")
-
-	if posterBaseUrl == "" {
-		return errors.New("tmdb poster_base_url not configured")
-	}
-
-	p.posterFetcher = poster.NewFetcher(posterFsBasePath, posterBaseUrl)
-
-	p.language = viper.GetString("media_providers.tmdb.language")
-
-	if p.language == "" {
-		p.language = "en"
-	}
-
-	p.region = viper.GetString("media_providers.tmdb.region")
-
-	if p.region == "" {
-		p.region = "US"
-	}
-
-	apiKey := viper.GetString("media_providers.tmdb.api_key")
+	apiKey := p.c.APIKey
 
 	if apiKey == "" {
 		return errors.New("tmdb api_key not configured")
 	}
 
-	config := tmdb.Config{
+	p.api = tmdb.Init(tmdb.Config{
 		APIKey: apiKey,
-	}
-
-	p.api = tmdb.Init(config)
+	})
 
 	return nil
+}
+
+func (p *TMDBProvider) downloadPoster(srcPath string, mediaId string) (string, error) {
+	fsBasePath := strings.TrimRight(config.C.PosterConfig.FsBasePath, "/")
+
+	if err := os.MkdirAll(fsBasePath, 0777); err != nil {
+		return "", err
+	}
+
+	extension := path.Ext(srcPath)
+
+	posterFilePath := fmt.Sprintf("%s/%s%s", fsBasePath, mediaId, extension)
+
+	posterFile, err := os.Create(posterFilePath)
+
+	if err != nil {
+		return "", err
+	}
+
+	defer func(posterFile *os.File) {
+		_ = posterFile.Close()
+	}(posterFile)
+
+	posterUrl := fmt.Sprintf("%s/%s", strings.TrimRight(p.c.PosterBaseUrl, "/"), strings.TrimLeft(srcPath, "/"))
+
+	resp, err := http.Get(posterUrl)
+
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", nil
+	}
+
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
+
+	_, err = io.Copy(posterFile, resp.Body)
+
+	return path.Base(posterFile.Name()), err
 }
 
 func (p *TMDBProvider) StartPull(wg *sync.WaitGroup, db *gorm.DB, mediaType model.MediaType, pullType pullType, pages int) {
@@ -156,8 +176,8 @@ func ensureGenres(mediaGenres []genreInfo, db *gorm.DB) ([]model.Genre, error) {
 func (p *TMDBProvider) PullMovie(logger *log.Entry, db *gorm.DB, pullType pullType, pages int) error {
 	opts := map[string]string{
 		"sort_by":       "rating.desc",
-		"language":      p.language,
-		"region":        p.region,
+		"language":      p.c.Language,
+		"region":        p.c.Region,
 		"include_adult": "false",
 	}
 
@@ -217,7 +237,7 @@ func (p *TMDBProvider) PullMovie(logger *log.Entry, db *gorm.DB, pullType pullTy
 			}
 
 			movie, err := p.api.GetMovieInfo(movieShort.ID, map[string]string{
-				"language": "de",
+				"language": p.c.Language,
 			})
 
 			if err != nil {
@@ -256,7 +276,6 @@ func (p *TMDBProvider) PullMovie(logger *log.Entry, db *gorm.DB, pullType pullTy
 				ReleaseDate: releaseDate,
 			}
 
-			// todo: this tries to be atomic, but still throws errors sometimes...
 			if err := db.Clauses(clause.OnConflict{
 				Columns:   []clause.Column{{Name: "provider"}, {Name: "type"}, {Name: "foreign_id"}},
 				UpdateAll: true,
@@ -270,8 +289,24 @@ func (p *TMDBProvider) PullMovie(logger *log.Entry, db *gorm.DB, pullType pullTy
 
 			logger.Info("downloading poster")
 
-			if err := p.posterFetcher.Download(movie.PosterPath, mediaModel.ID.String()); err != nil {
+			posterFileName, err := p.downloadPoster(movie.PosterPath, mediaModel.ID.String())
+
+			if err != nil {
 				return err
+			}
+
+			if posterFileName != "" {
+				mediaModel.PosterFileName = posterFileName
+
+				if err := db.Save(mediaModel).Error; err != nil {
+					return err
+				}
+
+				logger.WithFields(log.Fields{
+					"fileName": posterFileName,
+				}).Info("poster persisted")
+			} else {
+				logger.Warn("poster not found")
 			}
 
 			requestCooldown := getRequestCooldown()
@@ -290,8 +325,8 @@ func (p *TMDBProvider) PullMovie(logger *log.Entry, db *gorm.DB, pullType pullTy
 func (p *TMDBProvider) PullTv(logger *log.Entry, db *gorm.DB, pullType pullType, pages int) error {
 	opts := map[string]string{
 		"sort_by":      "vote_average.desc",
-		"language":     p.language,
-		"watch_region": p.region,
+		"language":     p.c.Language,
+		"watch_region": p.c.Region,
 		"timezone":     "Europe/Berlin",
 	}
 
@@ -351,7 +386,7 @@ func (p *TMDBProvider) PullTv(logger *log.Entry, db *gorm.DB, pullType pullType,
 			}
 
 			tv, err := p.api.GetTvInfo(tvShort.ID, map[string]string{
-				"language": "de",
+				"language": p.c.Language,
 			})
 
 			if err != nil {
@@ -409,8 +444,24 @@ func (p *TMDBProvider) PullTv(logger *log.Entry, db *gorm.DB, pullType pullType,
 
 			logger.Info("downloading poster")
 
-			if err := p.posterFetcher.Download(tv.PosterPath, mediaModel.ID.String()); err != nil {
+			posterFileName, err := p.downloadPoster(tv.PosterPath, mediaModel.ID.String())
+
+			if err != nil {
 				return err
+			}
+
+			if posterFileName != "" {
+				mediaModel.PosterFileName = posterFileName
+
+				if err := db.Save(mediaModel).Error; err != nil {
+					return err
+				}
+
+				logger.WithFields(log.Fields{
+					"fileName": posterFileName,
+				}).Info("poster persisted")
+			} else {
+				logger.Warn("poster not found")
 			}
 
 			requestCooldown := getRequestCooldown()

@@ -7,7 +7,11 @@
       <div class="button neutral" @click="handleVote(VoteType.NEUTRAL)">
         <PhShuffle weight="bold" />
       </div>
-      <div class="button neutral-2" @click="handleSeen">
+      <div
+        class="button neutral-2"
+        :class="[props.seen ? 'toggled-off' : 'toggled-on']"
+        @click="handleSeen"
+      >
         <PhCheck weight="bold" />
       </div>
       <div class="button positive" @click="handleVote(VoteType.POSITIVE)">
@@ -28,6 +32,14 @@ interface Emits {
 }
 
 const emits = defineEmits<Emits>();
+
+interface Props {
+  seen?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  seen: false,
+});
 
 const handleVote = (voteType: VoteType) => {
   emits('update:voteType', voteType);
@@ -71,6 +83,11 @@ const handleSeen = () => emits('seen');
 
       &:last-child {
         margin-right: 0;
+      }
+
+      &.toggled-off {
+        opacity: 0.5;
+        filter: saturate(25%);
       }
 
       &.positive {

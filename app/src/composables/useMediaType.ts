@@ -1,13 +1,13 @@
 import { MediaType } from '../model/Media';
 
 const mediaTypeLabelsSingular: { [K in MediaType]: string } = {
-  [MediaType.MOVIE]: 'Movie',
-  [MediaType.TV]: 'TV-Show',
+  [MediaType.MOVIE]: 'Film',
+  [MediaType.TV]: 'Serie',
 };
 
 const mediaTypeLabelsPlural: { [K in MediaType]: string } = {
-  [MediaType.MOVIE]: 'Movies',
-  [MediaType.TV]: 'TV-Shows',
+  [MediaType.MOVIE]: 'Filme',
+  [MediaType.TV]: 'Serien',
 };
 
 const getMediaTypeLabelSingular = (mediaType: MediaType) => {

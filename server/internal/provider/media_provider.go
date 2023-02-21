@@ -5,16 +5,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type Provider interface {
+type MediaProvider interface {
 	Init() error
 	Pull(db *gorm.DB, mediaType model.MediaType, pages int) error
 }
 
-func GetByName(providerName string) Provider {
+func GetMediaProviderByName(providerName string) (MediaProvider, error) {
 	switch providerName {
 	case tmdbProviderName:
 		return NewTMDB()
 	default:
-		return nil
+		return nil, nil
 	}
 }

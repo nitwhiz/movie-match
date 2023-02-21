@@ -19,7 +19,11 @@ func Pull(context *cli.Context) error {
 		return errors.New("no provider name specified")
 	}
 
-	mediaProvider := provider.GetByName(providerName)
+	mediaProvider, err := provider.GetMediaProviderByName(providerName)
+
+	if err != nil {
+		return err
+	}
 
 	if mediaProvider == nil {
 		return errors.New("media provider '" + providerName + "' not found.")
@@ -32,6 +36,10 @@ func Pull(context *cli.Context) error {
 	db, err := dbutils.GetConnection()
 
 	if err != nil {
+		return err
+	}
+
+	if err := dbutils.Migrate(db); err != nil {
 		return err
 	}
 

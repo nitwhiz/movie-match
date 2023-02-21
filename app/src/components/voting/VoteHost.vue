@@ -23,7 +23,11 @@
       v-if="currentMedia"
       :class="[hideButtons ? 'hidden' : 'visible']"
     >
-      <ButtonHost @vote="handleButtonVote" @seen="handleSeen" />
+      <ButtonHost
+        @vote="handleButtonVote"
+        @seen="handleSeen"
+        :seen="currentMedia.seen || false || forceSeen"
+      />
     </div>
   </div>
 </template>
@@ -31,7 +35,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { Media } from '../../model/Media';
-import { useUserStore } from '../../store/userStore';
 import { useApiClient } from '../../composables/useApiClient';
 import { VoteType } from '../../model/Vote';
 import MediaSwipeHost from './MediaSwipeHost.vue';
@@ -39,8 +42,7 @@ import ButtonHost from './ButtonHost.vue';
 
 const MEDIA_COUNT_REFRESH_THRESHOLD = 5;
 
-const userStore = useUserStore();
-const { apiClient } = await useApiClient();
+const apiClient = await useApiClient().apiClient;
 
 const matchNotificationVisible = ref(false);
 
@@ -48,7 +50,7 @@ const currentVoteType = ref(VoteType.NEUTRAL);
 
 const isFetchingMedia = ref(false);
 const mediaList = ref([] as Media[]);
-const mediaPageIndex = ref(0);
+const belowScore = ref('100');
 const mediaIndex = ref(0);
 
 const currentMedia = computed(() => mediaList.value[mediaIndex.value] || null);
@@ -57,6 +59,8 @@ const nextMedia = computed(() => mediaList.value[mediaIndex.value + 1] || null);
 const hideButtons = ref(false);
 
 const currentMediaMetaVisible = ref(false);
+
+const forceSeen = ref(false);
 
 watch(currentMediaMetaVisible, (v) => {
   if (v && hideButtons.value) {
@@ -74,6 +78,7 @@ const handleTouchEnd = () => {
 
 const showNextMedia = () => {
   ++mediaIndex.value;
+  forceSeen.value = false;
 
   nextTick(() => (currentVoteType.value = VoteType.NEUTRAL));
 
@@ -92,26 +97,25 @@ const fetchMedia = () => {
 
   isFetchingMedia.value = true;
 
-  apiClient
-    .getRecommendedMedia(userStore.currentUser?.id || '', mediaPageIndex.value)
-    .then((results) => {
-      mediaList.value.push(...results);
-      ++mediaPageIndex.value;
+  apiClient.getRecommendedMedia(belowScore.value).then((results) => {
+    mediaList.value.push(...results);
 
-      isFetchingMedia.value = false;
-    });
+    const lastResult = results.pop();
+
+    belowScore.value = lastResult?.score || '100';
+
+    isFetchingMedia.value = false;
+  });
 };
 
 const sendVote = (media: Media, voteType: VoteType) => {
-  apiClient
-    .voteMedia(userStore.currentUser?.id || '', media.id, voteType)
-    .then((isMatch) => {
-      if (isMatch) {
-        matchNotificationVisible.value = true;
+  apiClient.voteMedia(media.id, voteType).then((isMatch) => {
+    if (isMatch) {
+      matchNotificationVisible.value = true;
 
-        window.setTimeout(() => (matchNotificationVisible.value = false), 2000);
-      }
-    });
+      window.setTimeout(() => (matchNotificationVisible.value = false), 2000);
+    }
+  });
 };
 
 const handleButtonVote = (voteType: VoteType) => {
@@ -130,13 +134,9 @@ const handleVote = (voteType: VoteType) => {
 
 const handleSeen = () => {
   if (currentMedia.value) {
-    apiClient.setMediaSeen(
-      userStore.currentUser?.id || '',
-      currentMedia.value?.id || ''
-    );
+    apiClient.setMediaSeen(currentMedia.value?.id || '');
+    forceSeen.value = true;
   }
-
-  showNextMedia();
 };
 
 onMounted(() => {

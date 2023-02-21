@@ -3,32 +3,145 @@ import axiosStatic, { Axios } from 'axios';
 import { VoteType } from '../model/Vote';
 import { User } from '../model/User';
 import { Match } from '../model/Match';
+import jwtDecode from 'jwt-decode';
+import { Login } from '../model/Login';
+import Cookies from 'js-cookie';
+import EventEmitter from 'eventemitter3';
 
 interface Results<T> {
   results: T[];
 }
 
-export default class ApiClient {
+interface Token {
+  exp: number;
+  orig_iat: number;
+  userId: string;
+}
+
+const ACCESS_TOKEN_COOKIE_NAME = 'jwt';
+
+export default class ApiClient extends EventEmitter<{
+  unauthorized: () => void;
+  logout: () => void;
+}> {
   private readonly baseUrl: string;
 
   private readonly axios: Axios;
 
+  private accessToken: string;
+
+  private accessTokenExpiry: number;
+
   constructor(baseUrl: string) {
+    super();
+
     this.baseUrl = baseUrl;
 
     this.axios = axiosStatic.create({
       baseURL: baseUrl,
     });
+
+    this.accessToken = '';
+    this.accessTokenExpiry = 0;
   }
 
-  public getAllMedia(): Promise<Media[]> {
+  private setAccessToken(token: string) {
+    this.accessToken = token;
+    this.accessTokenExpiry = jwtDecode<Token>(token).exp * 1000;
+
+    this.axios.defaults.headers.common.Authorization = `Bearer ${this.accessToken}`;
+    this.axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+    Cookies.set(ACCESS_TOKEN_COOKIE_NAME, token, {
+      expires: new Date(this.accessTokenExpiry + 15 * 60 * 1000),
+      sameSite: 'Strict',
+    });
+  }
+
+  public loadAccessTokenFromCookie(): ApiClient {
+    const accessToken = Cookies.get(ACCESS_TOKEN_COOKIE_NAME);
+
+    if (accessToken) {
+      this.setAccessToken(accessToken);
+    }
+
+    return this;
+  }
+
+  private async checkAccessToken(): Promise<void> {
+    if (this.accessToken === '' || this.accessTokenExpiry === 0) {
+      this.emit('unauthorized');
+      return;
+    }
+
+    // renew token 5 min before it's invalid
+    if (Date.now() >= this.accessTokenExpiry - 5 * 60 * 1000) {
+      if (!(await this.refreshToken())) {
+        this.emit('unauthorized');
+      }
+    }
+  }
+
+  public login(login: Login): Promise<void> {
     return this.axios
-      .get<Results<Media>>('/media')
+      .post<{ token: string }>('/auth/login', login, {
+        transformRequest: [
+          (data, headers) => {
+            delete headers['Authorization'];
+
+            return data;
+          },
+          // @ts-ignore todo: wtf?
+          ...this.axios.defaults.transformRequest,
+        ],
+      })
       .then(({ data }) => data)
-      .then(({ results }) => results);
+      .then(({ token }) => {
+        if (token) {
+          this.setAccessToken(token);
+          return;
+        }
+
+        throw new Error('no token found');
+      });
   }
 
-  public getMedia(mediaId: string): Promise<Media> {
+  public logout(): Promise<void> {
+    return this.axios
+      .post('/auth/logout')
+      .then(() => Cookies.remove(ACCESS_TOKEN_COOKIE_NAME))
+      .then(() => {
+        this.emit('logout');
+      });
+  }
+
+  public refreshToken(): Promise<boolean> {
+    return this.axios
+      .post<{ token: string }>('/auth/refresh_token')
+      .then(({ data }) => data)
+      .then(({ token }) => {
+        if (token) {
+          this.setAccessToken(token);
+
+          return true;
+        }
+
+        return false;
+      });
+  }
+
+  public async me(): Promise<User> {
+    await this.checkAccessToken();
+
+    return this.axios
+      .get<{ user: User }>('/me')
+      .then(({ data }) => data)
+      .then(({ user }) => user);
+  }
+
+  public async getMedia(mediaId: string): Promise<Media> {
+    await this.checkAccessToken();
+
     return this.axios.get<Media>(`/media/${mediaId}`).then(({ data }) => data);
   }
 
@@ -36,12 +149,13 @@ export default class ApiClient {
     return `${this.baseUrl}/media/${mediaId}/poster`;
   }
 
-  public getRecommendedMedia(
-    userId: string,
-    page: number = 0
+  public async getRecommendedMedia(
+    belowScore: string = '100'
   ): Promise<Media[]> {
+    await this.checkAccessToken();
+
     return this.axios
-      .get<Results<Media>>(`/user/${userId}/media/recommended?page=${page}`)
+      .get<Results<Media>>(`/me/recommended?belowScore=${belowScore}`)
       .then(({ data }) => data)
       .then(({ results }) => results);
   }
@@ -49,36 +163,43 @@ export default class ApiClient {
   /**
    * returns true if there was a match
    */
-  public voteMedia(
-    userId: string,
+  public async voteMedia(
     mediaId: string,
     voteType: VoteType
   ): Promise<boolean> {
+    await this.checkAccessToken();
+
     return this.axios
-      .put<{ isMatch: boolean }>(`/user/${userId}/media/${mediaId}/vote`, {
+      .put<{ isMatch: boolean }>(`/media/${mediaId}/vote`, {
         voteType,
       })
       .then(({ data: { isMatch } }) => isMatch);
   }
 
-  public setMediaSeen(userId: string, mediaId: string): Promise<void> {
-    return this.axios.put(`/user/${userId}/media/${mediaId}/seen`);
+  public async setMediaSeen(mediaId: string): Promise<void> {
+    await this.checkAccessToken();
+
+    return this.axios.put(`/media/${mediaId}/seen`);
   }
 
-  public getUsers(): Promise<User[]> {
+  public async getUsers(): Promise<User[]> {
+    await this.checkAccessToken();
+
     return this.axios
-      .get<Results<User>>('/user')
+      .get<Results<User>>('/users')
       .then(({ data }) => data)
       .then(({ results }) => results);
   }
 
-  public getMatches(
+  public async getMatches(
     userId: string,
     mediaType: MediaType | null
   ): Promise<Match[]> {
+    await this.checkAccessToken();
+
     return this.axios
       .get<Results<Match>>(
-        `/user/${userId}/match${mediaType !== null ? `?type=${mediaType}` : ''}`
+        `/matches${mediaType !== null ? `?type=${mediaType}` : ''}`
       )
       .then(({ data }) => data)
       .then(({ results }) => results);
