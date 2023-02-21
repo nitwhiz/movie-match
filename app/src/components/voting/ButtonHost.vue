@@ -9,7 +9,7 @@
       </div>
       <div
         class="button neutral-2"
-        :class="[seen ? 'toggled-off' : 'toggled-on']"
+        :class="[props.seen ? 'toggled-off' : 'toggled-on']"
         @click="handleSeen"
       >
         <PhCheck weight="bold" />
@@ -104,9 +104,6 @@ const handleSeen = () => emits('seen');
 
       &.negative {
         background-color: #db2d2a;
-      }
-
-      &.seen {
       }
     }
   }

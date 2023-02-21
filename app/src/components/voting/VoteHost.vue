@@ -26,7 +26,7 @@
       <ButtonHost
         @vote="handleButtonVote"
         @seen="handleSeen"
-        :seen="currentMedia.seen || false"
+        :seen="currentMedia.seen || false || forceSeen"
       />
     </div>
   </div>
@@ -60,6 +60,8 @@ const hideButtons = ref(false);
 
 const currentMediaMetaVisible = ref(false);
 
+const forceSeen = ref(false);
+
 watch(currentMediaMetaVisible, (v) => {
   if (v && hideButtons.value) {
     currentMediaMetaVisible.value = false;
@@ -76,6 +78,7 @@ const handleTouchEnd = () => {
 
 const showNextMedia = () => {
   ++mediaIndex.value;
+  forceSeen.value = false;
 
   nextTick(() => (currentVoteType.value = VoteType.NEUTRAL));
 
@@ -132,6 +135,7 @@ const handleVote = (voteType: VoteType) => {
 const handleSeen = () => {
   if (currentMedia.value) {
     apiClient.setMediaSeen(currentMedia.value?.id || '');
+    forceSeen.value = true;
   }
 };
 
