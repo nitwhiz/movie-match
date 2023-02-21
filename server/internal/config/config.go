@@ -43,6 +43,7 @@ type Config struct {
 	MediaProviders MediaProvidersConfig `mapstructure:"media_providers"`
 	PosterConfig   PosterConfig         `mapstructure:"poster"`
 	Login          LoginConfig          `mapstructure:"login"`
+	Debug          bool                 `mapstructure:"debug"`
 }
 
 var C Config

@@ -28,9 +28,14 @@ func NewTokenCleanup(db *gorm.DB) *TokenCleanup {
 }
 
 func (c *TokenCleanup) Purge() {
+	log.Debug("Token Cleanup Start")
+
 	if err := c.db.Where("valid_until <= NOW()").Delete(&model.UserToken{}).Error; err != nil {
 		log.Error("Token Cleanup Error: " + err.Error())
 	}
+
+	log.Debug("Token Cleanup Finished")
+
 }
 
 func (c *TokenCleanup) Start() {
@@ -50,9 +55,16 @@ func (c *TokenCleanup) Start() {
 			}
 		}
 	}()
+
+	// initial cleanup
+	c.Purge()
 }
 
 func (c *TokenCleanup) Stop() {
 	c.cancel()
+	c.wg.Wait()
+}
+
+func (c *TokenCleanup) Wait() {
 	c.wg.Wait()
 }

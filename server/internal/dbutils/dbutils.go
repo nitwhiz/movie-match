@@ -8,8 +8,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"gorm.io/gorm/logger"
-	"time"
 )
 
 func GetConnection() (*gorm.DB, error) {
@@ -21,17 +19,8 @@ func GetConnection() (*gorm.DB, error) {
 		config.C.Database.Password,
 	)
 
-	dbLogger := logger.New(
-		log.New(),
-		logger.Config{
-			SlowThreshold: time.Second,
-			LogLevel:      logger.Error,
-			Colorful:      true,
-		},
-	)
-
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: dbLogger,
+		Logger: NewLogger(config.C.Debug),
 	})
 
 	if err != nil {

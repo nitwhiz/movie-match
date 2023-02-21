@@ -7,18 +7,27 @@ import (
 	"os"
 )
 
-func main() {
+func init() {
 	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp: true,
+		FullTimestamp:          true,
+		DisableLevelTruncation: true,
+		PadLevelText:           true,
 	})
 
 	if err := config.Init(); err != nil {
 		log.Fatal(err)
 	}
 
-	app := command.GetApp()
+	if config.C.Debug {
+		log.SetLevel(log.DebugLevel)
+		log.Debug("running in debug mode")
+	} else {
+		log.SetLevel(log.InfoLevel)
+	}
+}
 
-	if err := app.Run(os.Args); err != nil {
+func main() {
+	if err := command.GetApp().Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }

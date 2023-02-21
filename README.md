@@ -93,3 +93,32 @@ volumes:
   db_data:
   server_data_posters:
 ```
+
+## Server Options
+
+The server is designed to run as
+
+- User Token Cleaner: `--with-token-cleanup`
+- Media Auto Pull Server: `--with-media-auto-pull`
+- Webserver: `--web`
+
+Which part is enabled can be decided via flags, see next section.
+
+The docker containers have all flags enabled by default
+
+### Start a server with all functionalities
+
+```shell
+movie-match serve \
+  --web \
+  --with-token-cleanup \
+  --with-media-auto-pull
+```
+
+### Start a server which does not pull media automatically
+
+```shell
+movie-match serve \
+  --web \
+  --with-token-cleanup
+```

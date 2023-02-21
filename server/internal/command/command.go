@@ -9,6 +9,12 @@ import (
 const FlagPullType = "type"
 const FlagPullPages = "pages"
 
+const FlagServerWeb = "web"
+
+const FlagServerWithTokenCleanup = "with-token-cleanup"
+
+const FlagServerWithMediaAutoPull = "with-media-auto-pull"
+
 func GetApp() *cli.App {
 	return &cli.App{
 		Name:  "movie-match",
@@ -40,6 +46,20 @@ func GetApp() *cli.App {
 				Name:   "serve",
 				Usage:  "Start the server",
 				Action: Server,
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:  FlagServerWeb,
+						Usage: "Enable web server",
+					},
+					&cli.BoolFlag{
+						Name:  FlagServerWithTokenCleanup,
+						Usage: "Enable automatic token cleanup on this server",
+					},
+					&cli.BoolFlag{
+						Name:  FlagServerWithMediaAutoPull,
+						Usage: "Enable automatic media pull on this server",
+					},
+				},
 			},
 			{
 				Name:   "hash",
