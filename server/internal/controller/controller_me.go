@@ -21,7 +21,7 @@ type userMedia = struct {
 	Seen  bool   `json:"seen"`
 }
 
-func meGetAllRecommendations(db *gorm.DB) gin.HandlerFunc {
+func meGetRecommendations(db *gorm.DB) gin.HandlerFunc {
 	// todo: we should go jsonapi asap
 
 	return func(context *gin.Context) {
@@ -97,7 +97,10 @@ func meGetAllRecommendations(db *gorm.DB) gin.HandlerFunc {
 				mediaMap[m.ID] = m
 				mediaMap[m.ID].Genres = []model.Genre{}
 
-				seenMedia, err := dbutils.FirstModelOrNil[model.MediaSeen](db, &model.MediaSeen{MediaID: m.ID})
+				seenMedia, err := dbutils.FirstModelOrNil[model.MediaSeen](db, &model.MediaSeen{
+					MediaID: m.ID,
+					UserID:  user.ID,
+				})
 
 				if err != nil {
 					log.Error(err)
@@ -182,5 +185,5 @@ func useMe(router gin.IRouter, db *gorm.DB) {
 	meRouter := router.Group("/me")
 
 	meRouter.GET("", meGet())
-	meRouter.GET("recommended", meGetAllRecommendations(db))
+	meRouter.GET("recommended", meGetRecommendations(db))
 }
