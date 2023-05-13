@@ -8,7 +8,13 @@
       class="match-notification"
       :class="[matchNotificationVisible ? 'visible' : null]"
     >
-      It's a match!
+      <Lottie
+        ref="matchPartyPopper"
+        :animationData="lottiePartyPopper"
+        :width="24"
+        :height="24"
+        :loop="0"
+      />&nbsp;&nbsp;It's a match!
     </div>
     <MediaSwipeHost
       v-model:current-media-meta-visible="currentMediaMetaVisible"
@@ -39,6 +45,8 @@ import { useApiClient } from '../../composables/useApiClient';
 import { VoteType } from '../../model/Vote';
 import MediaSwipeHost from './MediaSwipeHost.vue';
 import ButtonHost from './ButtonHost.vue';
+import lottiePartyPopper from '../../assets/lottie/party-popper.json';
+import { Vue3Lottie } from 'vue3-lottie';
 
 const MEDIA_COUNT_REFRESH_THRESHOLD = 5;
 
@@ -52,6 +60,8 @@ const isFetchingMedia = ref(false);
 const mediaList = ref([] as Media[]);
 const belowScore = ref('100');
 const mediaIndex = ref(0);
+
+const matchPartyPopper = ref(null as typeof Vue3Lottie | null);
 
 const currentMedia = computed(() => mediaList.value[mediaIndex.value] || null);
 const nextMedia = computed(() => mediaList.value[mediaIndex.value + 1] || null);
@@ -113,7 +123,12 @@ const sendVote = (media: Media, voteType: VoteType) => {
     if (isMatch) {
       matchNotificationVisible.value = true;
 
-      window.setTimeout(() => (matchNotificationVisible.value = false), 2000);
+      nextTick(() => {
+        matchPartyPopper.value?.stop();
+        matchPartyPopper.value?.play();
+      });
+
+      window.setTimeout(() => (matchNotificationVisible.value = false), 1500);
     }
   });
 };
@@ -156,24 +171,27 @@ onMounted(() => {
   align-items: center;
 
   .match-notification {
-    font-size: 1.33rem;
+    font-size: 1.1rem;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
     position: absolute;
     z-index: 30;
 
     background: #222;
-    border-radius: 6px;
-    display: flex;
+    border-radius: 64px;
 
     left: 50%;
     top: -100px;
     transform: translate(-50%, 0);
 
-    padding: 12px 20px;
+    padding: 10px 20px;
 
     transition-property: top;
     transition-duration: 300ms;
-    transition-timing-function: ease-out;
+    transition-timing-function: ease-in-out;
 
     &.visible {
       top: 16px;

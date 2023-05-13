@@ -17,6 +17,7 @@ specifiers:
   vue: ^3.2.47
   vue-router: ^4.1.6
   vue-tsc: ^1.0.24
+  vue3-lottie: ^2.7.0
 
 dependencies:
   '@phosphor-icons/vue': 1.5.0_vue@3.2.47
@@ -27,6 +28,7 @@ dependencies:
   localforage: 1.10.0
   vue: 3.2.47
   vue-router: 4.1.6_vue@3.2.47
+  vue3-lottie: 2.7.0_vue@3.2.47
 
 devDependencies:
   '@types/js-cookie': 3.0.2
@@ -683,6 +685,14 @@ packages:
       lie: 3.1.1
     dev: false
 
+  /lodash-es/4.17.21:
+    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
+    dev: false
+
+  /lottie-web/5.11.0:
+    resolution: {integrity: sha512-9vSt0AtdOH98GKDXwD5LPfFg9Pcmxt5+1BllAbudKM5iqPxpJnJUfuGaP45OyudDrESCOBgsjnntVUTygBNlzw==}
+    dev: false
+
   /magic-string/0.25.9:
     resolution: {integrity: sha512-RmF0AsMzgt25qzqqLc1+MbHmhdx0ojF2Fvs4XnOqz2ZOBXzzkEwc/dJQZCYHAn7v1jbVOjAZfK8msRn4BxO4VQ==}
     dependencies:
@@ -907,3 +917,14 @@ packages:
       '@vue/runtime-dom': 3.2.47
       '@vue/server-renderer': 3.2.47_vue@3.2.47
       '@vue/shared': 3.2.47
+
+  /vue3-lottie/2.7.0_vue@3.2.47:
+    resolution: {integrity: sha512-6vblrGFQxRP1bqd5Lfg+/g/kDH7OL5dQMxU9xYORSsTC7NfHXOjebhYrIYOlRodtA5/zfWMkG+3+sIR7wjaIXw==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      vue: ^3.2
+    dependencies:
+      lodash-es: 4.17.21
+      lottie-web: 5.11.0
+      vue: 3.2.47
+    dev: false
