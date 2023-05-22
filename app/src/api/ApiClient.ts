@@ -163,7 +163,7 @@ export default class ApiClient extends EventEmitter<{
     return this.axios.get<Media>(`/media/${mediaId}`).then(({ data }) => data);
   }
 
-  public async getPosterBlobUrl(mediaId: string): Promise<string> {
+  public async getPosterBlobUrl(mediaId: string): Promise<string | null> {
     await this.checkAccessToken();
 
     return this.axios
@@ -171,7 +171,8 @@ export default class ApiClient extends EventEmitter<{
         responseType: 'blob',
       })
       .then(({ data }) => data)
-      .then((blob) => URL.createObjectURL(blob));
+      .then((blob) => URL.createObjectURL(blob))
+      .catch(() => null);
   }
 
   public async getRecommendedMedia(

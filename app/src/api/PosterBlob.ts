@@ -2,7 +2,7 @@ import { useApiClient } from '../composables/useApiClient';
 
 const postersByMediaId: Record<
   string,
-  { usages: number; urlPromise: Promise<string> }
+  { usages: number; urlPromise: Promise<string | null> }
 > = {};
 
 const apiClient = useApiClient().apiClient;
@@ -24,7 +24,10 @@ const free = (mediaId: string) => {
   postersByMediaId[mediaId].urlPromise.then((url) => {
     if (postersByMediaId[mediaId].usages === 0) {
       delete postersByMediaId[mediaId];
-      URL.revokeObjectURL(url);
+
+      if (url !== null) {
+        URL.revokeObjectURL(url);
+      }
     }
   });
 };

@@ -8,6 +8,9 @@
   >
     <div class="image-holder">
       <img v-if="currentPosterUrl" :src="currentPosterUrl" alt="" />
+      <div class="no-poster" v-else>
+        <PhCameraSlash :size="172" weight="duotone" />
+      </div>
     </div>
     <div class="meta-overlay" v-if="showMeta">
       <h3>{{ props.media.title }}</h3>
@@ -31,7 +34,7 @@
 </template>
 
 <script lang="ts" setup>
-import { PhStar, PhStarHalf } from '@phosphor-icons/vue';
+import { PhCameraSlash, PhStar, PhStarHalf } from '@phosphor-icons/vue';
 import { Media } from '../model/Media';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useMediaType } from '../composables/useMediaType';
@@ -198,6 +201,16 @@ onMounted(() => {
       max-height: 100%;
 
       box-shadow: 0 0 50px #111;
+    }
+
+    .no-poster {
+      background-color: black;
+      width: 100%;
+      height: 100%;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   }
 

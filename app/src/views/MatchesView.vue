@@ -14,9 +14,10 @@
       <div class="poster">
         <img
           v-if="mediaPosters[m.media.id]"
-          :src="mediaPosters[m.media.id]"
+          :src="mediaPosters[m.media.id] || undefined"
           :alt="m.media.title"
         />
+        <!-- todo: fallback poster -->
       </div>
       <div class="details">
         <b class="name">{{ m.media.title }}</b>
@@ -45,7 +46,7 @@ const { getMediaTypeLabelSingular } = useMediaType();
 
 const filterType = ref('all' as MediaType | 'all');
 
-const mediaPosters = ref({} as Record<string, string>);
+const mediaPosters = ref({} as Record<string, string | null>);
 
 const fetchMatches = () => {
   apiClient
