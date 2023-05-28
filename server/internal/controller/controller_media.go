@@ -101,7 +101,7 @@ func mediaGetPosterById(db *gorm.DB) gin.HandlerFunc {
 			}).Warn("missing poster")
 		}
 
-		fsPath = path.Join(config.C.PosterConfig.FsBasePath, media.PosterFileName)
+		fsPath = path.Join(config.C.Poster.FsBasePath, media.PosterFileName)
 
 		context.Status(http.StatusOK)
 		context.File(fsPath)

@@ -74,7 +74,7 @@ func (p *TMDBProvider) Init() error {
 }
 
 func (p *TMDBProvider) downloadPoster(srcPath string, mediaId string) (string, error) {
-	fsBasePath := strings.TrimRight(config.C.PosterConfig.FsBasePath, "/")
+	fsBasePath := strings.TrimRight(config.C.Poster.FsBasePath, "/")
 
 	if err := os.MkdirAll(fsBasePath, 0777); err != nil {
 		return "", err
@@ -153,24 +153,80 @@ func (p *TMDBProvider) Pull(db *gorm.DB, mediaType model.MediaType, pages int) e
 	return nil
 }
 
-func ensureGenres(mediaGenres []genreInfo, db *gorm.DB) ([]model.Genre, error) {
-	var genres []model.Genre
+func InsertMovie(db *gorm.DB, movie *tmdb.Movie, foreignID string) (*model.Media, error) {
+	genres, err := EnsureGenres(movie.Genres, db)
 
-	for _, g := range mediaGenres {
-		normalizedName := strings.TrimSpace(g.Name)
-
-		genre := model.Genre{
-			Name: normalizedName,
-		}
-
-		if err := db.FirstOrCreate(&genre, "name = ?", normalizedName).Error; err != nil {
-			return genres, err
-		}
-
-		genres = append(genres, genre)
+	if err != nil {
+		return nil, err
 	}
 
-	return genres, nil
+	releaseDate, err := time.Parse(time.DateOnly, movie.ReleaseDate)
+
+	if err != nil {
+		return nil, err
+	}
+
+	mediaModel := model.Media{
+		ForeignID:   foreignID,
+		Type:        model.MediaTypeMovie,
+		Provider:    tmdbProviderName,
+		Title:       movie.Title,
+		Summary:     movie.Overview,
+		Genres:      genres,
+		Rating:      int(math.Round(float64(movie.VoteAverage) * 10.0)),
+		Runtime:     int(movie.Runtime),
+		ReleaseDate: releaseDate,
+	}
+
+	if err := db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "provider"}, {Name: "type"}, {Name: "foreign_id"}},
+		UpdateAll: true,
+	}).Create(&mediaModel).Error; err != nil {
+		return nil, err
+	}
+
+	return &mediaModel, nil
+}
+
+func InsertTv(db *gorm.DB, tv *tmdb.TV, foreignID string) (*model.Media, error) {
+	genres, err := EnsureGenres(tv.Genres, db)
+
+	if err != nil {
+		return nil, err
+	}
+
+	releaseDate, err := time.Parse(time.DateOnly, tv.FirstAirDate)
+
+	if err != nil {
+		return nil, err
+	}
+
+	runtime := 0
+
+	if len(tv.EpisodeRunTime) > 0 {
+		runtime = tv.EpisodeRunTime[0]
+	}
+
+	mediaModel := model.Media{
+		ForeignID:   foreignID,
+		Type:        model.MediaTypeTv,
+		Provider:    tmdbProviderName,
+		Title:       tv.Name,
+		Summary:     tv.Overview,
+		Genres:      genres,
+		Rating:      int(math.Round(float64(tv.VoteAverage) * 10.0)),
+		Runtime:     runtime,
+		ReleaseDate: releaseDate,
+	}
+
+	if err := db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "provider"}, {Name: "type"}, {Name: "foreign_id"}},
+		UpdateAll: true,
+	}).Create(&mediaModel).Error; err != nil {
+		return nil, err
+	}
+
+	return &mediaModel, nil
 }
 
 func (p *TMDBProvider) PullMovie(logger *log.Entry, db *gorm.DB, pullType pullType, pages int) error {
@@ -252,34 +308,9 @@ func (p *TMDBProvider) PullMovie(logger *log.Entry, db *gorm.DB, pullType pullTy
 
 			logger.Info("processing media")
 
-			genres, err := ensureGenres(movie.Genres, db)
+			mediaModel, err := InsertMovie(db, movie, foreignID)
 
 			if err != nil {
-				return err
-			}
-
-			releaseDate, err := time.Parse(time.DateOnly, movie.ReleaseDate)
-
-			if err != nil {
-				return err
-			}
-
-			mediaModel := model.Media{
-				ForeignID:   foreignID,
-				Type:        model.MediaTypeMovie,
-				Provider:    tmdbProviderName,
-				Title:       movie.Title,
-				Summary:     movie.Overview,
-				Genres:      genres,
-				Rating:      int(math.Round(float64(movie.VoteAverage) * 10.0)),
-				Runtime:     int(movie.Runtime),
-				ReleaseDate: releaseDate,
-			}
-
-			if err := db.Clauses(clause.OnConflict{
-				Columns:   []clause.Column{{Name: "provider"}, {Name: "type"}, {Name: "foreign_id"}},
-				UpdateAll: true,
-			}).Create(&mediaModel).Error; err != nil {
 				return err
 			}
 
@@ -401,40 +432,9 @@ func (p *TMDBProvider) PullTv(logger *log.Entry, db *gorm.DB, pullType pullType,
 
 			logger.Info("processing media")
 
-			genres, err := ensureGenres(tv.Genres, db)
+			mediaModel, err := InsertTv(db, tv, foreignID)
 
 			if err != nil {
-				return err
-			}
-
-			releaseDate, err := time.Parse(time.DateOnly, tv.FirstAirDate)
-
-			if err != nil {
-				return err
-			}
-
-			runtime := 0
-
-			if len(tv.EpisodeRunTime) > 0 {
-				runtime = tv.EpisodeRunTime[0]
-			}
-
-			mediaModel := model.Media{
-				ForeignID:   foreignID,
-				Type:        model.MediaTypeTv,
-				Provider:    tmdbProviderName,
-				Title:       tv.Name,
-				Summary:     tv.Overview,
-				Genres:      genres,
-				Rating:      int(math.Round(float64(tv.VoteAverage) * 10.0)),
-				Runtime:     runtime,
-				ReleaseDate: releaseDate,
-			}
-
-			if err := db.Clauses(clause.OnConflict{
-				Columns:   []clause.Column{{Name: "provider"}, {Name: "type"}, {Name: "foreign_id"}},
-				UpdateAll: true,
-			}).Create(&mediaModel).Error; err != nil {
 				return err
 			}
 
