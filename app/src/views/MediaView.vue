@@ -1,15 +1,20 @@
 <template>
   <div class="media-view">
-    <MediaCard v-if="media" :media="media" v-model:meta-visible="metaVisible" />
+    <VoteHost
+      :swipe="false"
+      v-if="media"
+      :media="media"
+      v-model:meta-visible="metaVisible"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import MediaCard from '../components/MediaCard.vue';
 import { useRoute } from 'vue-router';
 import { onMounted, ref } from 'vue';
 import { Media } from '../model/Media';
 import { useApiClient } from '../composables/useApiClient';
+import VoteHost from '../components/voting/VoteHost.vue';
 
 const route = useRoute();
 const apiClient = await useApiClient().apiClient;

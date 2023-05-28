@@ -7,13 +7,13 @@
       <div class="button neutral" @click="handleVote(VoteType.NEUTRAL)">
         <PhShuffle weight="bold" />
       </div>
-      <div
-        class="button neutral-2"
-        :class="[props.seen ? 'toggled-off' : 'toggled-on']"
-        @click="handleSeen"
-      >
-        <PhCheck weight="bold" />
-      </div>
+      <!--      <div-->
+      <!--        class="button neutral-2"-->
+      <!--        :class="[props.seen ? 'toggled-off' : 'toggled-on']"-->
+      <!--        @click="handleSeen"-->
+      <!--      >-->
+      <!--        <PhCheck weight="bold" />-->
+      <!--      </div>-->
       <div class="button positive" @click="handleVote(VoteType.POSITIVE)">
         <PhHeart weight="fill" />
       </div>
@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts" setup>
-import { PhCheck, PhHeart, PhShuffle, PhX } from '@phosphor-icons/vue';
+import { PhHeart, PhShuffle, PhX } from '@phosphor-icons/vue';
 import { VoteType } from '../../model/Vote';
 
 interface Emits {

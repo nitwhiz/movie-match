@@ -1,12 +1,13 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import { useCurrentUser } from './composables/useCurrentUser';
+import { freeAllMediaBlobUrls } from './api/PosterBlob';
 
 import HomeView from './views/HomeView.vue';
 import VoteView from './views/VoteView.vue';
 import MatchesView from './views/MatchesView.vue';
 import MediaView from './views/MediaView.vue';
 import LoginView from './views/LoginView.vue';
-import { freeAllMediaBlobUrls } from './api/PosterBlob';
+import SearchView from './views/SearchView.vue';
 
 export const RouteName = {
   LOGIN: 'login',
@@ -14,6 +15,7 @@ export const RouteName = {
   VOTE: 'vote',
   MATCHES: 'matches',
   MEDIA: 'media',
+  SEARCH: 'search',
 } as const;
 
 const routes: RouteRecordRaw[] = [
@@ -38,6 +40,11 @@ const routes: RouteRecordRaw[] = [
     component: MatchesView,
   },
   {
+    path: '/search',
+    name: RouteName.SEARCH,
+    component: SearchView,
+  },
+  {
     path: '/media/:mediaId',
     name: RouteName.MEDIA,
     component: MediaView,
@@ -54,12 +61,12 @@ router.beforeEach(async (to, from, next) => {
 
   await load();
 
-  if (to.name === 'login' && currentUser.value) {
+  if (to.name === RouteName.LOGIN && currentUser.value) {
     next({ name: RouteName.HOME });
     return;
   }
 
-  if (to.name !== 'login' && !currentUser.value) {
+  if (to.name !== RouteName.LOGIN && !currentUser.value) {
     next({ name: RouteName.LOGIN });
     return;
   }

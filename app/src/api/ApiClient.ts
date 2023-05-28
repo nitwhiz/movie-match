@@ -230,4 +230,17 @@ export default class ApiClient extends EventEmitter<{
       .then(({ data }) => data)
       .then(({ results }) => results);
   }
+
+  public async searchMedia(query: string): Promise<Media[]> {
+    await this.checkAccessToken();
+
+    return this.axios
+      .get<Results<Media>>('/search/media', {
+        params: {
+          query,
+        },
+      })
+      .then(({ data }) => data)
+      .then(({ results }) => results);
+  }
 }

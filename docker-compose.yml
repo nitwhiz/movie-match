@@ -1,0 +1,44 @@
+services:
+
+  db:
+    image: postgres:15.1-alpine3.17
+    environment:
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "root"
+      POSTGRES_DB: "movie_match"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "db_data:/var/lib/postgresql/data"
+    networks:
+      - db
+
+  api:
+    build:
+      dockerfile: "docker/dev/api/Dockerfile"
+    volumes:
+      - "./server:/app:ro"
+      - "api_go_data:/go"
+      - "api_poster_data:/var/lib/movie-match/posters"
+    ports:
+      - "6445:6445"
+    depends_on:
+      - db
+    networks:
+      - db
+
+  app:
+    build:
+      dockerfile: "docker/dev/app/Dockerfile"
+    volumes:
+      - "./app:/app"
+    ports:
+      - "5173:5173"
+
+networks:
+  db:
+
+volumes:
+  db_data:
+  api_go_data:
+  api_poster_data:

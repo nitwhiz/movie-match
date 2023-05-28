@@ -16,14 +16,22 @@
         :loop="0"
       />&nbsp;&nbsp;It's a match!
     </div>
-    <MediaSwipeHost
-      v-model:current-media-meta-visible="currentMediaMetaVisible"
-      :current-media="currentMedia"
-      :next-media="nextMedia"
-      v-model:vote-type="currentVoteType"
-      @vote="handleVote"
-    />
-
+    <template v-if="props.swipe">
+      <MediaSwipeHost
+        v-model:current-media-meta-visible="currentMediaMetaVisible"
+        :current-media="currentMedia"
+        :next-media="nextMedia"
+        v-model:vote-type="currentVoteType"
+        @vote="handleVote"
+      />
+    </template>
+    <template v-else-if="currentMedia">
+      <MediaCard
+        :media="currentMedia"
+        :meta-visible="currentMediaMetaVisible"
+        @click="currentMediaMetaVisible = !currentMediaMetaVisible"
+      />
+    </template>
     <div
       class="button-wrapper"
       v-if="currentMedia"
@@ -32,7 +40,7 @@
       <ButtonHost
         @vote="handleButtonVote"
         @seen="handleSeen"
-        :seen="currentMedia.seen || false || forceSeen"
+        :seen="currentMedia.seen || forceSeen || false"
       />
     </div>
   </div>
@@ -47,6 +55,17 @@ import MediaSwipeHost from './MediaSwipeHost.vue';
 import ButtonHost from './ButtonHost.vue';
 import lottiePartyPopper from '../../assets/lottie/party-popper.json';
 import { Vue3Lottie } from 'vue3-lottie';
+import MediaCard from '../MediaCard.vue';
+
+interface Props {
+  swipe?: boolean;
+  media?: Media | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  swipe: true,
+  media: null,
+});
 
 const MEDIA_COUNT_REFRESH_THRESHOLD = 5;
 
@@ -144,7 +163,9 @@ const handleVote = (voteType: VoteType) => {
     sendVote(currentMedia.value, voteType);
   }
 
-  showNextMedia();
+  if (!props.media) {
+    showNextMedia();
+  }
 };
 
 const handleSeen = () => {
@@ -155,7 +176,11 @@ const handleSeen = () => {
 };
 
 onMounted(() => {
-  fetchMedia();
+  if (props.media) {
+    mediaList.value.push(props.media);
+  } else {
+    fetchMedia();
+  }
 });
 </script>
 
