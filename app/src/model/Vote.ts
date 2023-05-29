@@ -3,3 +3,12 @@ export const enum VoteType {
   NEGATIVE = 'negative',
   NEUTRAL = 'neutral',
 }
+
+export interface Vote {
+  id: string;
+  userId: string;
+  mediaId: string;
+  type: VoteType;
+  createdAt: string;
+  updatedAt: string;
+}

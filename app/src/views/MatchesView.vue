@@ -22,24 +22,16 @@ import { Match } from '../model/Match';
 import { Media, MediaType } from '../model/Media';
 import { useRouter } from 'vue-router';
 import { useApiClient } from '../composables/useApiClient';
-import { useMediaType } from '../composables/useMediaType';
-import { useCurrentUser } from '../composables/useCurrentUser';
 import MediaItem from '../components/media/MediaItem.vue';
 
 const router = useRouter();
-const { currentUser } = useCurrentUser();
 const apiClient = await useApiClient().apiClient;
-
-const { getMediaTypeLabelSingular } = useMediaType();
 
 const filterType = ref('all' as MediaType | 'all');
 
 const fetchMatches = () => {
   apiClient
-    .getMatches(
-      currentUser.value?.id || '',
-      filterType.value !== 'all' ? filterType.value : null
-    )
+    .getMatches(filterType.value !== 'all' ? filterType.value : null)
     .then(async (matches) => {
       matchList.value = [];
 

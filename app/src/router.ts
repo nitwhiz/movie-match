@@ -8,6 +8,7 @@ import MatchesView from './views/MatchesView.vue';
 import MediaView from './views/MediaView.vue';
 import LoginView from './views/LoginView.vue';
 import SearchView from './views/SearchView.vue';
+import YourVotesView from './views/YourVotesView.vue';
 
 export const RouteName = {
   LOGIN: 'login',
@@ -16,6 +17,7 @@ export const RouteName = {
   MATCHES: 'matches',
   MEDIA: 'media',
   SEARCH: 'search',
+  YOUR_VOTES: 'your-votes',
 } as const;
 
 const routes: RouteRecordRaw[] = [
@@ -38,6 +40,11 @@ const routes: RouteRecordRaw[] = [
     path: '/matches',
     name: RouteName.MATCHES,
     component: MatchesView,
+  },
+  {
+    path: '/votes',
+    name: RouteName.YOUR_VOTES,
+    component: YourVotesView,
   },
   {
     path: '/search',

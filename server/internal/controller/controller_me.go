@@ -181,9 +181,29 @@ func meGet() gin.HandlerFunc {
 	}
 }
 
+func meGetVotes(db *gorm.DB) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		user := auth.GetJWTUser(context)
+
+		if user == nil {
+			context.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+
+		votes := []model.Vote{}
+
+		db.Where("user_id = ?", user.ID).Order("updated_at DESC").Find(&votes)
+
+		context.JSON(http.StatusOK, gin.H{
+			"results": votes,
+		})
+	}
+}
+
 func useMe(router gin.IRouter, db *gorm.DB) {
 	meRouter := router.Group("/me")
 
 	meRouter.GET("", meGet())
 	meRouter.GET("recommended", meGetRecommendations(db))
+	meRouter.GET("votes", meGetVotes(db))
 }

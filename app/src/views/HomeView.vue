@@ -10,6 +10,9 @@
     <router-link :to="{ name: RouteName.MATCHES }" class="matches">
       <span class="text">Check Matches</span>
     </router-link>
+    <router-link :to="{ name: RouteName.YOUR_VOTES }" class="your-votes">
+      <span class="text">Your Votes</span>
+    </router-link>
     <router-link :to="{ name: RouteName.SEARCH }" class="search">
       <span class="text">Search Titles</span>
     </router-link>
@@ -91,6 +94,13 @@ const logout = async () => {
     &.search {
       @include nice.gradient-border(
         linear-gradient(30deg, rgb(78, 169, 32) 0%, rgb(31, 227, 174) 100%),
+        $border-width
+      );
+    }
+
+    &.your-votes {
+      @include nice.gradient-border(
+        linear-gradient(30deg, rgb(85, 212, 206) 0%, rgb(199, 85, 212) 100%),
         $border-width
       );
     }

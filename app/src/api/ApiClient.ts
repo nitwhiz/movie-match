@@ -1,6 +1,6 @@
 import { Media, MediaType } from '../model/Media';
 import axiosStatic, { Axios } from 'axios';
-import { VoteType } from '../model/Vote';
+import { Vote, VoteType } from '../model/Vote';
 import { User } from '../model/User';
 import { Match } from '../model/Match';
 import jwtDecode from 'jwt-decode';
@@ -217,16 +217,22 @@ export default class ApiClient extends EventEmitter<{
       .then(({ results }) => results);
   }
 
-  public async getMatches(
-    userId: string,
-    mediaType: MediaType | null
-  ): Promise<Match[]> {
+  public async getMatches(mediaType: MediaType | null): Promise<Match[]> {
     await this.checkAccessToken();
 
     return this.axios
       .get<Results<Match>>(
         `/matches${mediaType !== null ? `?type=${mediaType}` : ''}`
       )
+      .then(({ data }) => data)
+      .then(({ results }) => results);
+  }
+
+  public async getVotes(): Promise<Vote[]> {
+    await this.checkAccessToken();
+
+    return this.axios
+      .get<Results<Vote>>('/me/votes')
       .then(({ data }) => data)
       .then(({ results }) => results);
   }
