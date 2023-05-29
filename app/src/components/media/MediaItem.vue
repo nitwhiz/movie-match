@@ -16,8 +16,11 @@
 
 <script setup lang="ts">
 import { Media } from '../../model/Media';
-import { getMediaPosterBlobUrl } from '../../api/PosterBlob';
-import { computed, onMounted, ref } from 'vue';
+import {
+  freeMediaPosterBlobUrl,
+  getMediaPosterBlobUrl,
+} from '../../api/PosterBlob';
+import { computed, ref, watch } from 'vue';
 import { useMediaType } from '../../composables/useMediaType';
 import { PhCameraSlash } from '@phosphor-icons/vue';
 import { useRouter } from 'vue-router';
@@ -42,15 +45,25 @@ const mediaTypeLabel = computed(() =>
 
 const genres = computed(() => props.media.genres.map((g) => g.name).join(', '));
 
-onMounted(() => {
-  getMediaPosterBlobUrl(props.media.id).then((url) => {
-    if (url) {
-      posterUrl.value = url;
+watch(
+  () => props.media.id,
+  (_, oldValue) => {
+    if (oldValue) {
+      freeMediaPosterBlobUrl(oldValue);
     }
 
-    isLoadingPoster.value = false;
-  });
-});
+    getMediaPosterBlobUrl(props.media.id).then((url) => {
+      if (url) {
+        posterUrl.value = url;
+      }
+
+      isLoadingPoster.value = false;
+    });
+  },
+  {
+    immediate: true,
+  }
+);
 
 const handleClick = () => {
   router.push({

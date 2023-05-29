@@ -33,7 +33,9 @@ const free = (mediaId: string) => {
 };
 
 export const freeMediaPosterBlobUrl = (mediaId: string) => {
-  --postersByMediaId[mediaId].usages;
+  if (postersByMediaId[mediaId]) {
+    --postersByMediaId[mediaId].usages;
+  }
 
   free(mediaId);
 };
