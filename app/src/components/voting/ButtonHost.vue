@@ -15,7 +15,19 @@
       <!--        <PhCheck weight="bold" />-->
       <!--      </div>-->
       <div class="button positive" @click="handleVote(VoteType.POSITIVE)">
-        <PhHeart weight="fill" />
+        <div class="icon" v-if="!showHeartAnimation">
+          <PhHeart weight="fill" />
+        </div>
+        <div class="animation" v-if="showHeartAnimation">
+          <Vue3Lottie
+            ref="matchPartyPopper"
+            :animationData="lottieHeart"
+            :width="140"
+            :height="140"
+            :loop="0"
+            :speed="1.5"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -24,6 +36,9 @@
 <script lang="ts" setup>
 import { PhHeart, PhShuffle, PhX } from '@phosphor-icons/vue';
 import { VoteType } from '../../model/Vote';
+import { Vue3Lottie } from 'vue3-lottie';
+import lottieHeart from '../../assets/lottie/heart.json';
+import { ref } from 'vue';
 
 interface Emits {
   (e: 'vote', v: VoteType): void;
@@ -41,9 +56,19 @@ const props = withDefaults(defineProps<Props>(), {
   seen: false,
 });
 
+const showHeartAnimation = ref(false);
+
 const handleVote = (voteType: VoteType) => {
   emits('update:voteType', voteType);
   emits('vote', voteType);
+
+  if (voteType === VoteType.POSITIVE) {
+    showHeartAnimation.value = true;
+
+    window.setTimeout(() => {
+      showHeartAnimation.value = false;
+    }, 1000);
+  }
 };
 
 const handleSeen = () => emits('seen');
@@ -64,6 +89,8 @@ const handleSeen = () => emits('seen');
     align-items: center;
 
     .button {
+      position: relative;
+
       $size: 4rem;
 
       display: flex;
@@ -75,7 +102,6 @@ const handleSeen = () => emits('seen');
 
       width: $size;
       height: $size;
-      overflow: hidden;
 
       margin-right: calc($size / 4);
 
@@ -104,6 +130,23 @@ const handleSeen = () => emits('seen');
 
       &.negative {
         background-color: #db2d2a;
+      }
+
+      .icon,
+      .animation {
+        position: absolute;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .icon {
+        z-index: 10;
+      }
+
+      .animation {
+        z-index: 20;
       }
     }
   }

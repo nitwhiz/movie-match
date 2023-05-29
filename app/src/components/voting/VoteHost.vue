@@ -6,10 +6,10 @@
   >
     <div
       class="match-notification"
+      v-if="matchNotificationVisible"
       :class="[matchNotificationVisible ? 'visible' : null]"
     >
-      <Lottie
-        ref="matchPartyPopper"
+      <Vue3Lottie
         :animationData="lottiePartyPopper"
         :width="24"
         :height="24"
@@ -80,8 +80,6 @@ const mediaList = ref([] as Media[]);
 const belowScore = ref('100');
 const mediaIndex = ref(0);
 
-const matchPartyPopper = ref(null as typeof Vue3Lottie | null);
-
 const currentMedia = computed(() => mediaList.value[mediaIndex.value] || null);
 const nextMedia = computed(() => mediaList.value[mediaIndex.value + 1] || null);
 
@@ -141,11 +139,6 @@ const sendVote = (media: Media, voteType: VoteType) => {
   apiClient.voteMedia(media.id, voteType).then((isMatch) => {
     if (isMatch) {
       matchNotificationVisible.value = true;
-
-      nextTick(() => {
-        matchPartyPopper.value?.stop();
-        matchPartyPopper.value?.play();
-      });
 
       window.setTimeout(() => (matchNotificationVisible.value = false), 1500);
     }
