@@ -1,0 +1,749 @@
+[
+  {
+    "id": "14892fb9-9c6b-4132-b30b-0384eaaa0a36",
+    "foreignId": "61864",
+    "type": "tv",
+    "provider": "tmdb",
+    "title": "Good Witch",
+    "summary": "Die Fernsehserie „Good Witch“ ist eine Fortführung der erfolgreichen Filmreihe über die zauberhafte Welt der modernen Hexe Cassandra ‚Cassie‘ Nightingale und ihrer Tochter Grace. Zu Beginn der Serie bekommen die beiden neue Nachbarn: Sam und sein Teenagersohn sind auf Anhieb vom zauberhaften Duo begeistert. Doch ist es tatsächlich Zufall, dass sie genau dort einziehen?",
+    "genres": [
+      {
+        "id": "8e13bfdc-107c-417f-beb2-95c35bcd64c6",
+        "name": "Komödie",
+        "createdAt": "2023-05-22T10:35:51.902957Z"
+      },
+      {
+        "id": "9bd51b20-a728-41a8-a50e-a89df411601f",
+        "name": "Drama",
+        "createdAt": "2023-05-22T10:35:54.331593Z"
+      },
+      {
+        "id": "21bb127d-0757-4953-bff2-eb6932ff2181",
+        "name": "Sci-Fi & Fantasy",
+        "createdAt": "2023-05-22T10:42:32.167173Z"
+      }
+    ],
+    "runtime": 43,
+    "rating": 78,
+    "releaseDate": "2015-02-28T00:00:00Z",
+    "createdAt": "2023-05-28T13:02:46.279431Z",
+    "updatedAt": "2023-05-28T13:02:46.569689Z",
+    "score": "0.99955895030850495700",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "9f868469-d689-467a-ae01-950da0ca373d",
+    "foreignId": "60796",
+    "type": "tv",
+    "provider": "tmdb",
+    "title": "Stalker",
+    "summary": "Wer wäre besser geeignet, Stalkern auf die Schliche zu kommen, als Detectives mit ähnlichen Charakterzügen? Doch die Detectives der Threat Management Unit im LAPD, die diese Fälle untersuchen, haben mit ihren eigenen Obsessionen zu kämpen …",
+    "genres": [
+      {
+        "id": "2cb975cd-055c-4b89-a064-37c1d7af6bcc",
+        "name": "Krimi",
+        "createdAt": "2023-05-22T10:35:55.291829Z"
+      },
+      {
+        "id": "9bd51b20-a728-41a8-a50e-a89df411601f",
+        "name": "Drama",
+        "createdAt": "2023-05-22T10:35:54.331593Z"
+      }
+    ],
+    "runtime": 42,
+    "rating": 66,
+    "releaseDate": "2014-10-01T00:00:00Z",
+    "createdAt": "2023-05-28T13:06:13.939735Z",
+    "updatedAt": "2023-05-28T13:06:14.017429Z",
+    "score": "0.99330265121222597100",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "b2dde93f-71c3-44f2-aa6f-a96683c33e0d",
+    "foreignId": "33827",
+    "type": "tv",
+    "provider": "tmdb",
+    "title": "Das Universum - Eine Reise durch Raum und Zeit",
+    "summary": "Die Dokumentarserie zeigt spektakuläre Bilder aus den Tiefen des Kosmos. Es werden  führende Wissenschaftler zu den großen Geheimnissen des Weltalls befragt  und gibt Aufschluss über die grundlegenden Bausteine unseres Universums.",
+    "genres": [
+      {
+        "id": "62fc188d-f0bc-4b1e-9351-1cee28cdd418",
+        "name": "Dokumentarfilm",
+        "createdAt": "2023-05-22T10:35:55.991561Z"
+      }
+    ],
+    "runtime": 42,
+    "rating": 83,
+    "releaseDate": "2010-04-25T00:00:00Z",
+    "createdAt": "2023-05-28T13:04:21.250366Z",
+    "updatedAt": "2023-05-28T13:04:21.332636Z",
+    "score": "0.98750293300836483600",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "a43408a1-c219-4530-929c-f424e854fdba",
+    "foreignId": "75006",
+    "type": "tv",
+    "provider": "tmdb",
+    "title": "The Umbrella Academy",
+    "summary": "Entfremdete Geschwister mit Superkräften entdecken nach dem Tod ihres Vaters schockierende Familiengeheimnisse und eine ernste Bedrohung für die Menschheit.  Im Zentrum steht eine Gruppe von Kindern, die 1989 von Müttern auf die Welt gebracht wurden, die noch am Morgen des „Geburtstags“ kein Zeichen von Schwangerschaft aufwiesen. Der Großindustrielle Sir Reginald Hargreeves adoptierte sieben dieser Kinder und gründete für sie die „Umbrella Academy“, in welcher er sie darauf vorbereiten wollte, mit ihren unterschiedlichen Fähigkeiten die Welt vor ihrem drohenden Untergang zu bewahren – denn hinter der Fassade Hargreeves’ steckt ein Außerirdischer. Doch im Teenager-Alter gingen die Schüler getrennte Wege.",
+    "genres": [
+      {
+        "id": "3fb77ff1-2775-4438-a953-6e4817edce2c",
+        "name": "Action & Adventure",
+        "createdAt": "2023-05-22T10:42:32.083604Z"
+      },
+      {
+        "id": "21bb127d-0757-4953-bff2-eb6932ff2181",
+        "name": "Sci-Fi & Fantasy",
+        "createdAt": "2023-05-22T10:42:32.167173Z"
+      },
+      {
+        "id": "9bd51b20-a728-41a8-a50e-a89df411601f",
+        "name": "Drama",
+        "createdAt": "2023-05-22T10:35:54.331593Z"
+      }
+    ],
+    "runtime": 55,
+    "rating": 86,
+    "releaseDate": "2019-02-15T00:00:00Z",
+    "createdAt": "2023-05-28T13:02:06.173782Z",
+    "updatedAt": "2023-05-28T13:02:06.416826Z",
+    "score": "0.98331645176900385500",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "10cec9c3-6cb2-49ea-86b4-08bff8883620",
+    "foreignId": "140607",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Star Wars: Das Erwachen der Macht",
+    "summary": "Über 30 Jahre sind vergangen, seitdem die Rebellen den zweiten Todesstern über Endor zerstört und damit die entscheidende Schlacht gegen die finsteren Mächte des Imperiums gewonnen haben. Doch aus der Asche des Bösen ist die Erste Ordnung empor gestiegen und hat die Herrschaft wieder an sich gerissen. Während Supreme Leader Snoke die Zügel im Hintergrund in den Händen hält, schickt er den Lichtschwert schwingenden Kylo Ren ins Feld, um die neue Weltordnung auch in den verstecktesten Winkeln der Galaxis zu verbreiten. Von großer Politik aber weiß Rey auf dem Wüstenplaneten Jakku zunächst nicht viel. Die junge Frau verbringt ihre Tage damit, die karge Landschaft nach Schrott abzusuchen, den sie danach verkauft. Sie ist allein, wartet auf ihre Familie – bis sie die Bekanntschaft von Finn macht, einem ehemaligen Sturmtruppler, den die Untaten der Ersten Ordnung abgeschreckt haben.",
+    "genres": [
+      {
+        "id": "763bb3ab-af02-4064-8325-284f7556fa13",
+        "name": "Abenteuer",
+        "createdAt": "2023-05-22T10:35:54.608789Z"
+      },
+      {
+        "id": "b4a632c4-b715-4112-b854-77dc947263a7",
+        "name": "Action",
+        "createdAt": "2023-05-22T10:35:54.606881Z"
+      },
+      {
+        "id": "bc9164ba-311e-4d54-a666-be65c3c112fb",
+        "name": "Science Fiction",
+        "createdAt": "2023-05-22T10:35:55.185658Z"
+      }
+    ],
+    "runtime": 136,
+    "rating": 73,
+    "releaseDate": "2015-12-15T00:00:00Z",
+    "createdAt": "2023-05-28T13:02:27.883746Z",
+    "updatedAt": "2023-05-28T13:02:27.984614Z",
+    "score": "0.97651281439536847800",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "68af2d78-18ee-40a5-ac5e-067a990c8a0d",
+    "foreignId": "211297",
+    "type": "tv",
+    "provider": "tmdb",
+    "title": "REVENGER",
+    "summary": "Als der meisterhafte Assassine Usui Yuen eine Reihe von Attentaten auf den großen Samurai-Clan Satsuma untersucht, trifft er auf Kurima Raizo – ein Mitglied und Überlebender eines der Anschläge. Gemeinsam entdecken sie, dass es bei diesen Morden um mehr geht als um gestohlene Ressourcen. Werden sie, je näher sie der Wahrheit kommen, lebend davonkommen, um Rache zu üben?",
+    "genres": [
+      {
+        "id": "5f8a023e-11f0-4477-b429-851f94a61d8f",
+        "name": "Animation",
+        "createdAt": "2023-05-22T10:35:54.210233Z"
+      },
+      {
+        "id": "3fb77ff1-2775-4438-a953-6e4817edce2c",
+        "name": "Action & Adventure",
+        "createdAt": "2023-05-22T10:42:32.083604Z"
+      }
+    ],
+    "runtime": 24,
+    "rating": 72,
+    "releaseDate": "2023-01-05T00:00:00Z",
+    "createdAt": "2023-05-28T13:04:29.064257Z",
+    "updatedAt": "2023-05-28T13:04:29.1482Z",
+    "score": "0.97617958717801588900",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "c2d37180-6e52-4f1f-a3a9-cfcd368d30d2",
+    "foreignId": "18198",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Barbie - Mariposa und ihre Freundinnen, die Schmetterlingsfeen",
+    "summary": "Barbie Mariposa wird von ihren Genossinnen wie eine Magd behandelt. So ist sie diejenige, die deren Kleider verschönert, die sie für eine große Party tragen wollen, um beim Prinzen des Königreiches Eindruck zu schinden. Natürlich ist es aber Mariposa, die auf Anhieb das Interesse des Prinzen auf sich lenkt. Doch bevor die Romanze beginnen kann, hat Mariposa erst ein gefährliches Abenteuer zu bestehen: Die Königin droht an einem geheimnisvollen Gift zu sterben, und das Gegenmittel muss erst im Land der Todfeinde besorgt werden.",
+    "genres": [
+      {
+        "id": "5f8a023e-11f0-4477-b429-851f94a61d8f",
+        "name": "Animation",
+        "createdAt": "2023-05-22T10:35:54.210233Z"
+      },
+      {
+        "id": "05fb9f97-ad5d-4f25-a004-10523e256ec2",
+        "name": "Fantasy",
+        "createdAt": "2023-05-22T10:35:56.229038Z"
+      },
+      {
+        "id": "6a29758a-4b71-4829-9e63-b5f8725e0af6",
+        "name": "Familie",
+        "createdAt": "2023-05-22T10:35:54.216121Z"
+      }
+    ],
+    "runtime": 75,
+    "rating": 67,
+    "releaseDate": "2008-02-26T00:00:00Z",
+    "createdAt": "2023-05-28T13:04:44.499288Z",
+    "updatedAt": "2023-05-28T13:04:44.611671Z",
+    "score": "0.97090913959355519100",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "54f28090-4d9f-461a-9b89-2ad6d572958f",
+    "foreignId": "72545",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Die Reise zur geheimnisvollen Insel",
+    "summary": "Sean hat viel erlebt. Nachdem er bereits mit seinem Onkel zum Mittelpunkt der Erde reiste, steht nun die nächste Reise an. Zusammen mit seinem Stiefvater in spe, Hank Parson, hat es sich Sean zur Aufgabe gemacht, eine mysteriöse Insel zu finden, von der sein verschollener Großvater stets erzählt hat. Zusammen machen sie sich auf den Weg, die Spur eines Funkspruchs zu verfolgen. Schon bald stoßen die hübsche Kailani und der Pilot Gabato der Reisegemeinschaft hinzu, denn ohne fremde Hilfe würden Sean und Hank nicht weit kommen. Bevor sie gemeinsam mit einem Helikopter zum Ort des abgegebenen Funkspruchs fliegen können, werden sie von einem Unwetter zur Notlandung gezwungen. Glücklicherweise finden sie sich am Strand einer Insel wieder – Der geheimnisvollen Insel. Doch die atemberaubende Schönheit der Insel täuscht. An vielen Ecken lauern Gefahren, die die kleine Gruppe vor ganz neue Herausforderungen stellen.",
+    "genres": [
+      {
+        "id": "763bb3ab-af02-4064-8325-284f7556fa13",
+        "name": "Abenteuer",
+        "createdAt": "2023-05-22T10:35:54.608789Z"
+      },
+      {
+        "id": "b4a632c4-b715-4112-b854-77dc947263a7",
+        "name": "Action",
+        "createdAt": "2023-05-22T10:35:54.606881Z"
+      },
+      {
+        "id": "bc9164ba-311e-4d54-a666-be65c3c112fb",
+        "name": "Science Fiction",
+        "createdAt": "2023-05-22T10:35:55.185658Z"
+      }
+    ],
+    "runtime": 94,
+    "rating": 61,
+    "releaseDate": "2012-01-19T00:00:00Z",
+    "createdAt": "2023-05-28T13:02:43.937004Z",
+    "updatedAt": "2023-05-28T13:02:44.039138Z",
+    "score": "0.96388063438417419500",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "33317f80-2c51-41df-868c-4a66f5c987bc",
+    "foreignId": "599626",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Schwiegereltern im Busch",
+    "summary": "Eigentlich wollten das wohlhabende Ehepaar von Zangenheim und das „prollige“ Berliner Ehepaar Kowalski die Hochzeit ihrer Zöglinge Jochen und Chiara auf einer Lodge in Südafrika feiern. Doch anstatt in Saus und Braus zu schlemmen, kämpfen die beiden unterschiedlichen Paare nach einer Notlandung in der Einöde ums Überleben. Ob die vier es noch pünktlich zur Hochzeit schaffen? Auf dem Weg zur Hochzeit ihrer Kinder Chiara und Jochen müssen die Zangenheims und die Kowalskis plötzlich notlanden. Mitten im Nirgendwo treten die Konflikte der Paare zutage, was die Weiterreise zum Veranstaltungsort riskant macht. Als sei es nicht genug, dass sie sich mit ihnen unbekannten, wilden Tieren konfrontiert sehen, wollen sie sich gegenseitig ständig an die Kehle. Dabei hatten sie eigentlich zum Anlass der Feier Frieden schließen wollen.",
+    "genres": [
+      {
+        "id": "6923ece4-a377-4dcb-b5ee-4754eab629b9",
+        "name": "TV-Film",
+        "createdAt": "2023-05-22T10:35:59.374634Z"
+      },
+      {
+        "id": "8e13bfdc-107c-417f-beb2-95c35bcd64c6",
+        "name": "Komödie",
+        "createdAt": "2023-05-22T10:35:51.902957Z"
+      },
+      {
+        "id": "763bb3ab-af02-4064-8325-284f7556fa13",
+        "name": "Abenteuer",
+        "createdAt": "2023-05-22T10:35:54.608789Z"
+      }
+    ],
+    "runtime": 89,
+    "rating": 40,
+    "releaseDate": "2019-04-15T00:00:00Z",
+    "createdAt": "2023-05-28T13:00:44.888866Z",
+    "updatedAt": "2023-05-28T13:00:44.963509Z",
+    "score": "0.94927698417998709900",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "c6f34f2e-ca41-45e7-bd5a-9015be60bf95",
+    "foreignId": "42265",
+    "type": "tv",
+    "provider": "tmdb",
+    "title": "Taff",
+    "summary": "taff ist ein deutsches Boulevardmagazin, das auf ProSieben ausgestrahlt wird. Die kurzen Beiträge oder Wochenserien behandeln vor allem Hollywood-Klatsch, Jugend- und Popkultur sowie Neuigkeiten aus aller Welt. Die Sendung wird in Unterföhring bei München produziert. Studiodesign und Moderatoren wechselten mehrfach.",
+    "genres": [
+      {
+        "id": "cee4959f-623b-42f3-9612-4b02d14226d5",
+        "name": "News",
+        "createdAt": "2023-05-22T10:42:34.28973Z"
+      },
+      {
+        "id": "70eda74a-e264-409b-b031-b92a0144b89f",
+        "name": "Talk",
+        "createdAt": "2023-05-22T10:42:33.734114Z"
+      }
+    ],
+    "runtime": 60,
+    "rating": 30,
+    "releaseDate": "1997-03-11T00:00:00Z",
+    "createdAt": "2023-05-28T13:01:08.376213Z",
+    "updatedAt": "2023-05-28T13:01:08.453639Z",
+    "score": "0.93235615684294894200",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "9dc1945f-f526-4c99-ab2a-3b353a4fb270",
+    "foreignId": "13688",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "CJ7 - Nicht von dieser Welt",
+    "summary": "Ti arbeitet auf dem Bau und schränkt sich tagtäglich stark ein, um seinem Sohn Dicky den Besuch einer teuren Privatschule finanzieren zu können. Schließlich soll es der Junge einmal besser haben als er selbst. Aber Dicky wird in der Schule von Mitschülern aus gutem Hause aufgrund seiner einfachen Herkunft oft gehänselt und ausgeschlossen. Als eines der Kinder einen Roboterhund namens CJ1 in die Schule mitbringt und diesem die Aufmerksamkeit und Achtung der anderen Schüler zufliegen, wünscht sich Dicky auch so einen elektronischen Hund. Doch für den aufopferungsvollen Vater ist ein solches Luxusspielzeug einfach nicht bezahlbar. Ti geht - wie schon so oft - auf die örtliche Müllhalde und sucht dort nach funktionstüchtigen Objekten. Hier findet er einen neongrünen Ball, der bei Dicky anfangs nur auf wenig Begeisterung stößt. Doch dann entwickelt das grüne Etwas ein Eigenleben und entpuppt sich schließlich als süßer außerirdischer Hund…",
+    "genres": [
+      {
+        "id": "8e13bfdc-107c-417f-beb2-95c35bcd64c6",
+        "name": "Komödie",
+        "createdAt": "2023-05-22T10:35:51.902957Z"
+      },
+      {
+        "id": "9bd51b20-a728-41a8-a50e-a89df411601f",
+        "name": "Drama",
+        "createdAt": "2023-05-22T10:35:54.331593Z"
+      },
+      {
+        "id": "6a29758a-4b71-4829-9e63-b5f8725e0af6",
+        "name": "Familie",
+        "createdAt": "2023-05-22T10:35:54.216121Z"
+      },
+      {
+        "id": "05fb9f97-ad5d-4f25-a004-10523e256ec2",
+        "name": "Fantasy",
+        "createdAt": "2023-05-22T10:35:56.229038Z"
+      },
+      {
+        "id": "bc9164ba-311e-4d54-a666-be65c3c112fb",
+        "name": "Science Fiction",
+        "createdAt": "2023-05-22T10:35:55.185658Z"
+      }
+    ],
+    "runtime": 86,
+    "rating": 72,
+    "releaseDate": "2008-01-30T00:00:00Z",
+    "createdAt": "2023-05-28T13:05:04.813488Z",
+    "updatedAt": "2023-05-28T13:05:04.928639Z",
+    "score": "0.93085095329715449100",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "ae60ed70-8923-4abe-af0a-780e940bcc66",
+    "foreignId": "207703",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Kingsman: The Secret Service",
+    "summary": "Harry Hart ist ein britischer Geheimagent der alten Schule – cool, charmant und abgebrüht. Er arbeitet für einen der geheimsten Nachrichtendienste überhaupt: die Kingsman. die Agenten, die sich selbst als moderne Ritter verstehen, sind ständig auf der Suche nach neuen Rekruten. Harry wird auf den Straßenjungen Gary aufmerksam, der, wie er findet, einiges an Potenzial zeigt. allerdings liebäugelt dieser mit der Welt jenseits des Gesetzes und kennt keine Disziplin. Dennoch bewahrt ihn Harry vor dem Gefängnis und schleust ihn in das Rekrutierungsprogramm der Kingsman ein. Dies ist das wohl härteste seiner Art und an vielen Stellen wirklich lebensgefährlich. Zu allem Überfluss bahnt sich noch während der Ausbildung eine weltweite Bedrohung an. Ein unglaublich gut organisiertes Verbrechersyndikat erscheint auf dem Plan und bedroht den internationalen Frieden und die Sicherheit. Gary muss sich nun beeilen, die Torturen der Ausbildung überstehen und, am aller Wichtigsten, erwachsen werden.",
+    "genres": [
+      {
+        "id": "2cb975cd-055c-4b89-a064-37c1d7af6bcc",
+        "name": "Krimi",
+        "createdAt": "2023-05-22T10:35:55.291829Z"
+      },
+      {
+        "id": "8e13bfdc-107c-417f-beb2-95c35bcd64c6",
+        "name": "Komödie",
+        "createdAt": "2023-05-22T10:35:51.902957Z"
+      },
+      {
+        "id": "b4a632c4-b715-4112-b854-77dc947263a7",
+        "name": "Action",
+        "createdAt": "2023-05-22T10:35:54.606881Z"
+      },
+      {
+        "id": "763bb3ab-af02-4064-8325-284f7556fa13",
+        "name": "Abenteuer",
+        "createdAt": "2023-05-22T10:35:54.608789Z"
+      }
+    ],
+    "runtime": 129,
+    "rating": 76,
+    "releaseDate": "2014-12-13T00:00:00Z",
+    "createdAt": "2023-05-28T13:02:00.458895Z",
+    "updatedAt": "2023-05-28T13:02:00.537081Z",
+    "score": "0.92372759288350473800",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "500c2da7-e75b-4367-ae6f-97b112b2cc7f",
+    "foreignId": "661",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Die Ehe der Maria Braun",
+    "summary": "Deutschland im Jahr 1943: Während eines Luftangriffs in einer deutschen Stadt heiratet Maria den Soldaten Hermann Braun; das Standesamt wird durch die Explosion einer Fliegerbombe zerstört. Hermann muss sofort wieder an die Front, und Maria ist auf sich allein gestellt. Nach Kriegsende nimmt sie ihr Schicksal in die eigene Hand. Die Nachricht, Hermann sei gefallen, veranlasst die mit ihrer Mutter und ihrem Großvater lebende Maria, als Bardame für den Lebensunterhalt der Familie zu sorgen. Sie beginnt eine Beziehung mit Bill, einem afroamerikanischen GI, der sich um sie kümmert und sie mit begehrten Gütern wie Nylonstrümpfen und Zigaretten versorgt. Marias Mann ist jedoch noch am Leben und kehrt aus der Kriegsgefangenschaft zurück.",
+    "genres": [
+      {
+        "id": "9bd51b20-a728-41a8-a50e-a89df411601f",
+        "name": "Drama",
+        "createdAt": "2023-05-22T10:35:54.331593Z"
+      }
+    ],
+    "runtime": 120,
+    "rating": 73,
+    "releaseDate": "1979-03-23T00:00:00Z",
+    "createdAt": "2023-05-28T13:00:31.784681Z",
+    "updatedAt": "2023-05-28T13:00:31.885566Z",
+    "score": "0.92124971604032894400",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "98d35b06-bf2c-4dae-a3f0-ecd10f1560bb",
+    "foreignId": "201289",
+    "type": "tv",
+    "provider": "tmdb",
+    "title": "Beschütze Sie",
+    "summary": "Eine Frau muss eine Beziehung zu ihrer Stieftochter im Teenageralter aufbauen, um ihren Mann zu finden, der auf mysteriöse Weise verschwunden ist.",
+    "genres": [
+      {
+        "id": "001c8801-68d0-481c-a95f-02022cf32f66",
+        "name": "Mystery",
+        "createdAt": "2023-05-22T10:35:56.128572Z"
+      },
+      {
+        "id": "9bd51b20-a728-41a8-a50e-a89df411601f",
+        "name": "Drama",
+        "createdAt": "2023-05-22T10:35:54.331593Z"
+      }
+    ],
+    "runtime": 0,
+    "rating": 74,
+    "releaseDate": "2023-04-13T00:00:00Z",
+    "createdAt": "2023-05-28T13:00:36.532755Z",
+    "updatedAt": "2023-05-28T13:00:36.639626Z",
+    "score": "0.91994931032878780300",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "6a193f57-331a-4850-a0d6-b931f8c707fa",
+    "foreignId": "123377",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Pieta",
+    "summary": "Mit brachialer Gewalt treibt Lee Kang-do für einen Geldverleiher Schulden ein. Säumige Schuldner, welche die horrenden Wucherzinsen nicht zahlen können, macht er gnadenlos zu Krüppeln, um die Unfallversicherungssumme zu kassieren. Eines Tages begegnet dieser Unmensch einer Frau, die behauptet, sie sei seine Mutter. Anfangs weist der alleinstehende, mutterlos aufgewachsene junge Mann die geheimnisvolle Fremde schroff ab. Als er sie vergewaltigen will, wehrt sie sich weinend. Nach der Inzest-Attacke beginnt Kang-do ihr zu glauben, sie zieht bei ihm ein und bemuttert ihn. Die Fürsorge löst eine Art Läuterungsprozess beim Mann aus, er gibt seine brutale Tätigkeit auf. Als die Frau plötzlich verschwindet, denkt Kang-do, sie wäre von einem seiner früheren Misshandlungsopfer aus Rache entführt worden. Beim verzweifelten Rettungsversuch macht Kang-do eine schockierende Entdeckung.",
+    "genres": [
+      {
+        "id": "9bd51b20-a728-41a8-a50e-a89df411601f",
+        "name": "Drama",
+        "createdAt": "2023-05-22T10:35:54.331593Z"
+      }
+    ],
+    "runtime": 104,
+    "rating": 71,
+    "releaseDate": "2012-09-05T00:00:00Z",
+    "createdAt": "2023-05-28T13:10:42.652107Z",
+    "updatedAt": "2023-05-28T13:10:42.730193Z",
+    "score": "0.88890376542178158000",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "aedb0967-b57c-469e-89bf-93b1c9e9e1bc",
+    "foreignId": "865",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Running Man",
+    "summary": "Im Jahr 2011 trägt die populärste Fernsehshow den Namen 'Running Man'. Straffällig gewordene Männer und Frauen müssen ihren Preis gegenüber der Gesellschaft mit dem Tod bezahlen. Dieser Tod tritt allerdings erst nach einem brutalen, aussichtslosen Kampf gegen die Gladiatoren von 'Running Man' ein. Jetzt allerdings befindet sich Ben Richards in der Todeszone und der Moderator der Show, Damon Killian  sollte niemals Richards letzte Worte vergessen: Ich komme wieder.",
+    "genres": [
+      {
+        "id": "b4a632c4-b715-4112-b854-77dc947263a7",
+        "name": "Action",
+        "createdAt": "2023-05-22T10:35:54.606881Z"
+      },
+      {
+        "id": "bc9164ba-311e-4d54-a666-be65c3c112fb",
+        "name": "Science Fiction",
+        "createdAt": "2023-05-22T10:35:55.185658Z"
+      },
+      {
+        "id": "adeeb03f-f4de-4b37-9b59-61836342204b",
+        "name": "Thriller",
+        "createdAt": "2023-05-22T10:35:54.607846Z"
+      }
+    ],
+    "runtime": 101,
+    "rating": 65,
+    "releaseDate": "1987-11-13T00:00:00Z",
+    "createdAt": "2023-05-28T13:00:44.350753Z",
+    "updatedAt": "2023-05-28T13:00:44.457732Z",
+    "score": "0.88248630095389033700",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "e7897cb5-5f0c-48f6-aeae-3d1acb4d9f78",
+    "foreignId": "2129",
+    "type": "tv",
+    "provider": "tmdb",
+    "title": "Jimmy Neutron",
+    "summary": "Willkommen in Retroville! Mit Raumschiff, mädchenfressender Pflanze und unsichtbaren Hamster. Woher kommen diese tollen Sachen? Na, von Jimmy Neutron! Die fantastischen Erfindungen des Wunderkindes machen sein Leben leichter, wenn sie denn so funktionieren...",
+    "genres": [
+      {
+        "id": "5f8a023e-11f0-4477-b429-851f94a61d8f",
+        "name": "Animation",
+        "createdAt": "2023-05-22T10:35:54.210233Z"
+      },
+      {
+        "id": "3fb77ff1-2775-4438-a953-6e4817edce2c",
+        "name": "Action & Adventure",
+        "createdAt": "2023-05-22T10:42:32.083604Z"
+      },
+      {
+        "id": "8e13bfdc-107c-417f-beb2-95c35bcd64c6",
+        "name": "Komödie",
+        "createdAt": "2023-05-22T10:35:51.902957Z"
+      },
+      {
+        "id": "6a29758a-4b71-4829-9e63-b5f8725e0af6",
+        "name": "Familie",
+        "createdAt": "2023-05-22T10:35:54.216121Z"
+      }
+    ],
+    "runtime": 24,
+    "rating": 74,
+    "releaseDate": "2002-07-20T00:00:00Z",
+    "createdAt": "2023-05-28T13:02:00.100418Z",
+    "updatedAt": "2023-05-28T13:02:00.233557Z",
+    "score": "0.87658525485386385300",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "b050a625-3fc4-4101-be78-172a125f1bdd",
+    "foreignId": "153697",
+    "type": "tv",
+    "provider": "tmdb",
+    "title": "Ayakashi Triangle",
+    "summary": "Seit seiner Kindheit arbeitet Matsuri Kazamaki als Exorzist. Seine Jugendfreundin Suzu Kanada zieht bösartige Geister namens Ayakashi wie Motten die Flamme an, weswegen Matsuri damit beauftragt wird, alle Geister zu töten. Eines Tages bemerkt ein Ayakashi mit dem Namen Shirogane die aufkeimende Romanze zwischen den beiden Freunden. Um Suzu zu verschlingen und Matsuris Chance auf Liebe zu vereiteln, spricht er einen verbotenen Zauberspruch …",
+    "genres": [
+      {
+        "id": "5f8a023e-11f0-4477-b429-851f94a61d8f",
+        "name": "Animation",
+        "createdAt": "2023-05-22T10:35:54.210233Z"
+      },
+      {
+        "id": "8e13bfdc-107c-417f-beb2-95c35bcd64c6",
+        "name": "Komödie",
+        "createdAt": "2023-05-22T10:35:51.902957Z"
+      },
+      {
+        "id": "3fb77ff1-2775-4438-a953-6e4817edce2c",
+        "name": "Action & Adventure",
+        "createdAt": "2023-05-22T10:42:32.083604Z"
+      },
+      {
+        "id": "21bb127d-0757-4953-bff2-eb6932ff2181",
+        "name": "Sci-Fi & Fantasy",
+        "createdAt": "2023-05-22T10:42:32.167173Z"
+      }
+    ],
+    "runtime": 24,
+    "rating": 68,
+    "releaseDate": "2023-01-10T00:00:00Z",
+    "createdAt": "2023-05-28T13:07:06.449898Z",
+    "updatedAt": "2023-05-28T13:07:06.562747Z",
+    "score": "0.87628332007503291600",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "e0ee3cb2-0ecd-4866-9ec6-559d7030a79f",
+    "foreignId": "2023",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Hidalgo - 3000 Meilen zum Ruhm",
+    "summary": "Texas/USA, 1890: Der Kurierreiter Frank T. Hopkins und sein Pferd, der drahtige Mustang Hidalgo, gehen gemeinsam durch dick und dünn. Ihr Ruf ist so legendär, dass er über den Ozean nach Arabien dringt. Die Gesandtschaft eines Scheichs lädt Hopkins als ersten Amerikaner ein, seine Kräfte mit den stolzesten Reitern des Orients zu messen bei einem mörderischen Ausdauerrennen, das über 3000 Meilen durch die arabische Wüste führt. Hopkins willigt ein und stürzt sich in das Abenteuer seines Lebens. Denn nicht nur unerträgliche Hitze, harte Konkurrenten, Sandstürme, Heuschrekenschwärme und eine wunderschöne Prinzessin erwarten den Cowboy, sondern auch seine inneren Dämonen, denen er auf dem Rücken von Hidalgo stets zu entfliehen versucht hat.",
+    "genres": [
+      {
+        "id": "0f095d92-3721-472f-aa8a-1f1085d67cbf",
+        "name": "Western",
+        "createdAt": "2023-05-22T10:36:15.031831Z"
+      },
+      {
+        "id": "763bb3ab-af02-4064-8325-284f7556fa13",
+        "name": "Abenteuer",
+        "createdAt": "2023-05-22T10:35:54.608789Z"
+      },
+      {
+        "id": "b4a632c4-b715-4112-b854-77dc947263a7",
+        "name": "Action",
+        "createdAt": "2023-05-22T10:35:54.606881Z"
+      }
+    ],
+    "runtime": 136,
+    "rating": 68,
+    "releaseDate": "2004-02-04T00:00:00Z",
+    "createdAt": "2023-05-28T13:12:20.194454Z",
+    "updatedAt": "2023-05-28T13:12:20.298577Z",
+    "score": "0.87361256632656444200",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "f092edf9-c4e4-4061-aa5b-e74f164f02ce",
+    "foreignId": "409502",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Ja, ich glaube",
+    "summary": "Ihre Geschichte hat Millionen Menschen bewegt: Rachel Joy Scott war das erste Opfer der beiden Attentäter, die 1999 während ihres Amoklaufs an der „Columbine High School“ insgesamt 13 Menschen und am Ende sich selbst töteten. Dieser Film geht jedoch weit über das tragische Ereignis hinaus: Basierend auf Rachels Tagebucheinträgen gewährt er Einblicke in das Leben einer jungen Frau, deren offenes Bekenntnis zu ihrem Glauben sie schließlich das Leben kostete. Gleichzeitig transportiert er die hoffnungsvolle Botschaft, dass wir die Welt verändern können, wenn wir unser Leben voll und ganz Jesus Christus anvertrauen. Denn genau das hat Rachel getan – und damit nicht nur die Menschen in ihrem direkten Umfeld, sondern am Ende auch Millionen von Menschen weltweit berührt.",
+    "genres": [
+      {
+        "id": "9bd51b20-a728-41a8-a50e-a89df411601f",
+        "name": "Drama",
+        "createdAt": "2023-05-22T10:35:54.331593Z"
+      }
+    ],
+    "runtime": 113,
+    "rating": 73,
+    "releaseDate": "2016-10-21T00:00:00Z",
+    "createdAt": "2023-05-28T13:03:28.449266Z",
+    "updatedAt": "2023-05-28T13:03:28.572071Z",
+    "score": "0.86059081408222709500",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "a3419cf9-ee09-4d72-86ff-83ccdae718ae",
+    "foreignId": "632",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Stalag 17",
+    "summary": "Zweiter Weltkrieg: Im berüchtigten deutschen Kriegsgefangenenlager Stalag 17 tut sich eine Handvoll amerikanischer GI's zusammen. Ihr gemeinsames Ziel - Flucht! Immer wieder schmieden sie neue Pläne, wie sie einander helfen können zu entkommen. Doch dann sterben zwei von ihnen bei einem Fluchtversuch. Und den anderen wird klar: In ihrer Mitte gibt es einen Verräter!",
+    "genres": [
+      {
+        "id": "8e13bfdc-107c-417f-beb2-95c35bcd64c6",
+        "name": "Komödie",
+        "createdAt": "2023-05-22T10:35:51.902957Z"
+      },
+      {
+        "id": "adeeb03f-f4de-4b37-9b59-61836342204b",
+        "name": "Thriller",
+        "createdAt": "2023-05-22T10:35:54.607846Z"
+      },
+      {
+        "id": "f8eba297-961d-4964-a2bc-df1715e01dfe",
+        "name": "Kriegsfilm",
+        "createdAt": "2023-05-22T10:35:54.839199Z"
+      }
+    ],
+    "runtime": 120,
+    "rating": 77,
+    "releaseDate": "1953-05-29T00:00:00Z",
+    "createdAt": "2023-05-28T13:08:09.37745Z",
+    "updatedAt": "2023-05-28T13:08:09.450537Z",
+    "score": "0.85844327735642123800",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "dcd636fe-eb7a-40bb-9eaf-4cccc53ff39f",
+    "foreignId": "7225",
+    "type": "tv",
+    "provider": "tmdb",
+    "title": "Merlin - Die Neuen Abenteuer",
+    "summary": "In Camelot herrscht König Uther Pendragon, der Magie zum  Schwerverbrechen erklärt hat. Das Anwenden von Magie wird mit dem Tod  bestraft. Dies macht es nicht gerade leicht für den jungen Merlin, der  erst kürzlich in die Stadt gezogen ist. Er lebt beim Hofarzt Gaius, der  schnell seine magischen Fähigkeiten erkennt, ihn jedoch bei jeder  Gelegenheit in Schutz nimmt.\n\nEs dauert nicht lange, bis Merlin zum ersten Mal Prinz Arthur  begegnet. Nach der ersten Auseinandersetzung zwischen den beiden gehen  sie sich aus dem Weg, doch als Merlin Arthurs Leben rettet, bestimmt  Uther, dass Merlin zur Belohnung Arthurs Diener wird. Zunächst sind  beide nicht sehr begeistert, aber bald entwickelt sich eine  freundschaftliche Beziehung, die beide aber oft nicht richtig wahrhaben  wollen. Merlin erfährt von einem Drachen, der unter Camelot in  Gefangenschaft lebt, dass es sein Schicksal ist, Arthur zu schützen und  ihm bei seinem vorbestimmten Weg beiseite zu stehen.",
+    "genres": [
+      {
+        "id": "3fb77ff1-2775-4438-a953-6e4817edce2c",
+        "name": "Action & Adventure",
+        "createdAt": "2023-05-22T10:42:32.083604Z"
+      },
+      {
+        "id": "9bd51b20-a728-41a8-a50e-a89df411601f",
+        "name": "Drama",
+        "createdAt": "2023-05-22T10:35:54.331593Z"
+      },
+      {
+        "id": "21bb127d-0757-4953-bff2-eb6932ff2181",
+        "name": "Sci-Fi & Fantasy",
+        "createdAt": "2023-05-22T10:42:32.167173Z"
+      }
+    ],
+    "runtime": 43,
+    "rating": 78,
+    "releaseDate": "2008-09-20T00:00:00Z",
+    "createdAt": "2023-05-28T13:02:00.236058Z",
+    "updatedAt": "2023-05-28T13:02:00.355405Z",
+    "score": "0.84325922692346350600",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "f6a633dd-ef91-4fbe-903c-4c2bdcc525cf",
+    "foreignId": "126963",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Dragonball Z: Kampf der Götter",
+    "summary": "Nachdem unsere tapferen Z-Krieger den gefährlichsten Widersacher der Erde, den Dämon Boo, vernichten konnten, wartet schon eine neue Herausforderung auf Son-Goku und seine Freunde. Denn Beerus, der Gott der Zerstörung, ist aus langem Schlaf erwacht und begierig, den Saiyajin-Krieger herauszufordern, der Freezer ausgeschaltet haben soll. Son-Gokus anfängliche Freude über einen so starken Gegner ist bald getrübt, denn die gewaltige Macht Beerus‘ scheint unbezwingbar. Wird es den Z-Kriegern erneut gelingen, ihren Planeten und das Universum zu retten?",
+    "genres": [
+      {
+        "id": "5f8a023e-11f0-4477-b429-851f94a61d8f",
+        "name": "Animation",
+        "createdAt": "2023-05-22T10:35:54.210233Z"
+      },
+      {
+        "id": "b4a632c4-b715-4112-b854-77dc947263a7",
+        "name": "Action",
+        "createdAt": "2023-05-22T10:35:54.606881Z"
+      },
+      {
+        "id": "bc9164ba-311e-4d54-a666-be65c3c112fb",
+        "name": "Science Fiction",
+        "createdAt": "2023-05-22T10:35:55.185658Z"
+      }
+    ],
+    "runtime": 85,
+    "rating": 68,
+    "releaseDate": "2013-03-30T00:00:00Z",
+    "createdAt": "2023-05-28T13:01:59.063529Z",
+    "updatedAt": "2023-05-28T13:01:59.246914Z",
+    "score": "0.83101829552604737500",
+    "seen": false,
+    "voteType": "none"
+  },
+  {
+    "id": "961c2298-28f2-4246-ae09-4b0dba12b71c",
+    "foreignId": "1621",
+    "type": "movie",
+    "provider": "tmdb",
+    "title": "Die Glücksritter",
+    "summary": "Randolph und Mortimer Duke haben gewettet: der eine ist der Meinung, jeder könne den Job eines Brokers ausüben, der andere meint, nur wer die richtigen Gene und Umgebung genossen hat, ist dazu in der Lage. Also müssen Louis Winthorpe III und Billy Ray Valentine ohne ihr Wissen ihre Rollen tauschen – vom Kleinkriminellen zum Börsenexperten und umgekehrt.",
+    "genres": [
+      {
+        "id": "8e13bfdc-107c-417f-beb2-95c35bcd64c6",
+        "name": "Komödie",
+        "createdAt": "2023-05-22T10:35:51.902957Z"
+      }
+    ],
+    "runtime": 118,
+    "rating": 72,
+    "releaseDate": "1983-06-07T00:00:00Z",
+    "createdAt": "2023-05-28T13:04:20.25598Z",
+    "updatedAt": "2023-05-28T13:04:20.363603Z",
+    "score": "0.81545035392765437900",
+    "seen": false,
+    "voteType": "none"
+  }
+]

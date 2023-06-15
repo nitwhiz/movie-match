@@ -1,28 +1,33 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import { useCurrentUser } from './composables/useCurrentUser';
-import { freeAllMediaBlobUrls } from './api/PosterBlob';
-
+import LoginView from './views/LoginView.vue';
 import HomeView from './views/HomeView.vue';
-import VoteView from './views/VoteView.vue';
+import FeedView from './views/FeedView.vue';
 import MatchesView from './views/MatchesView.vue';
 import MediaView from './views/MediaView.vue';
-import LoginView from './views/LoginView.vue';
+import VotesView from './views/VotesView.vue';
+import Poster from './common/Poster';
 import SearchView from './views/SearchView.vue';
-import YourVotesView from './views/YourVotesView.vue';
 
 export const RouteName = {
+  ROOT: 'root',
   LOGIN: 'login',
   HOME: 'home',
-  VOTE: 'vote',
+  FEED: 'feed',
   MATCHES: 'matches',
   MEDIA: 'media',
   SEARCH: 'search',
-  YOUR_VOTES: 'your-votes',
+  VOTES: 'votes',
 } as const;
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
+    name: RouteName.ROOT,
+    redirect: RouteName.LOGIN,
+  },
+  {
+    path: '/login',
     name: RouteName.LOGIN,
     component: LoginView,
   },
@@ -32,9 +37,9 @@ const routes: RouteRecordRaw[] = [
     component: HomeView,
   },
   {
-    path: '/vote',
-    name: RouteName.VOTE,
-    component: VoteView,
+    path: '/feed',
+    name: RouteName.FEED,
+    component: FeedView,
   },
   {
     path: '/matches',
@@ -43,8 +48,8 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/votes',
-    name: RouteName.YOUR_VOTES,
-    component: YourVotesView,
+    name: RouteName.VOTES,
+    component: VotesView,
   },
   {
     path: '/search',
@@ -78,7 +83,7 @@ router.beforeEach(async (to, from, next) => {
     return;
   }
 
-  freeAllMediaBlobUrls();
+  Poster.freeAll();
 
   next();
 });

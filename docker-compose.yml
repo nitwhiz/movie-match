@@ -34,6 +34,7 @@ services:
       - "./app:/app"
     ports:
       - "5173:5173"
+      - "6006:6006"
 
 networks:
   db:

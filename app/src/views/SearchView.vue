@@ -2,17 +2,17 @@
   <div class="search">
     <h2>Search Titles</h2>
     <div class="filter">
-      <div class="search-bar">
+      <NiceWrapper :colors="['rgb(185, 81, 126)', 'rgb(95, 148, 210)']">
         <input
           type="text"
           v-model="searchQuery"
           @input="debouncedStartSearch"
           placeholder="Enter Title"
         />
-      </div>
+      </NiceWrapper>
     </div>
     <div class="match" v-for="m in results">
-      <MediaItem :media="m" />
+      <MediaItem :media="m.media" :vote-type="m.voteType" />
     </div>
   </div>
 </template>
@@ -23,10 +23,17 @@ import { onMounted, ref } from 'vue';
 import { useApiClient } from '../composables/useApiClient';
 import MediaItem from '../components/media/MediaItem.vue';
 import { useSearchQuery } from '../composables/useSearchQuery';
+import NiceWrapper from '../components/nice/NiceWrapper.vue';
+import { VoteType } from '../model/Vote';
 
-const { apiClient } = useApiClient();
+const apiClient = await useApiClient().apiClient;
 
-const results = ref([] as Media[]);
+const results = ref(
+  [] as {
+    media: Media;
+    voteType: VoteType;
+  }[]
+);
 
 const { searchQuery } = useSearchQuery();
 
@@ -38,8 +45,22 @@ const startSearch = () => {
   }
 
   apiClient
-    .then((c) => c.searchMedia(searchQuery.value))
-    .then((searchResults) => (results.value = searchResults));
+    .searchMedia(searchQuery.value)
+    .then(async (searchResults) => {
+      const voteResults = [];
+
+      for (const result of searchResults) {
+        voteResults.push(await apiClient.getMediaVote(result.id));
+      }
+
+      return [searchResults, voteResults];
+    })
+    .then(([searchResults, voteResults]) => {
+      results.value = (searchResults as Media[]).map((m, i) => ({
+        media: m,
+        voteType: (voteResults[i] as VoteType) || VoteType.NONE,
+      }));
+    });
 };
 
 const debouncedStartSearch = () => {
@@ -60,8 +81,6 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@use '../styles/nice';
-
 .search {
   width: 100%;
   height: 100%;
@@ -73,21 +92,6 @@ onMounted(() => {
 
   .filter {
     margin-bottom: 20px;
-
-    .search-bar {
-      @include nice.gradient-border(
-        linear-gradient(20deg, rgb(185, 81, 126) 0%, rgb(95, 148, 210) 100%),
-        3px
-      );
-
-      padding: 0.25rem;
-
-      input {
-        padding: 0.5rem;
-
-        width: 100%;
-      }
-    }
   }
 
   .match {

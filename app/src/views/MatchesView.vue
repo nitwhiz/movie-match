@@ -2,13 +2,16 @@
   <div class="matches">
     <h2>Your Matches</h2>
     <div class="filter">
-      <div class="type">
+      <NiceWrapper
+        class="type"
+        :colors="['rgb(185, 81, 126)', 'rgb(95, 148, 210)']"
+      >
         <select v-model="filterType">
           <option value="all">All</option>
           <option value="tv">TV-Shows</option>
           <option value="movie">Movies</option>
         </select>
-      </div>
+      </NiceWrapper>
     </div>
     <div class="match" v-for="m in matchList">
       <MediaItem :media="m.media" />
@@ -23,15 +26,16 @@ import { Media, MediaType } from '../model/Media';
 import { useRouter } from 'vue-router';
 import { useApiClient } from '../composables/useApiClient';
 import MediaItem from '../components/media/MediaItem.vue';
+import NiceWrapper from '../components/nice/NiceWrapper.vue';
 
 const router = useRouter();
 const apiClient = await useApiClient().apiClient;
 
-const filterType = ref('all' as MediaType | 'all');
+const filterType = ref(MediaType.ALL);
 
 const fetchMatches = () => {
   apiClient
-    .getMatches(filterType.value !== 'all' ? filterType.value : null)
+    .getMatches(filterType.value !== MediaType.ALL ? filterType.value : null)
     .then(async (matches) => {
       matchList.value = [];
 
@@ -56,8 +60,6 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@use '../styles/nice';
-
 .matches {
   width: 100%;
   height: 100%;
@@ -71,17 +73,16 @@ onMounted(() => {
     margin-bottom: 20px;
 
     .type {
-      @include nice.gradient-border(
-        linear-gradient(20deg, rgb(185, 81, 126) 0%, rgb(95, 148, 210) 100%),
-        3px
-      );
-
       padding: 0.25rem;
 
       select {
         padding: 0.5rem;
 
         width: 100%;
+
+        option {
+          background-color: black;
+        }
       }
     }
   }

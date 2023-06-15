@@ -2,7 +2,7 @@
   <div class="votes">
     <h2>Your Votes</h2>
     <div class="vote" v-for="m in voteList">
-      <MediaItem :media="m.media" />
+      <MediaItem :media="m.media" :vote-type="m.vote.type" />
     </div>
   </div>
 </template>
@@ -11,7 +11,7 @@
 import MediaItem from '../components/media/MediaItem.vue';
 import { useRouter } from 'vue-router';
 import { useApiClient } from '../composables/useApiClient';
-import { onMounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { Media, MediaType } from '../model/Media';
 import { Vote } from '../model/Vote';
 
@@ -37,10 +37,8 @@ const fetchMatches = () => {
   });
 };
 
-watch(filterType, () => fetchMatches());
-
-onMounted(() => {
-  fetchMatches();
+watch(filterType, () => fetchMatches(), {
+  immediate: true,
 });
 </script>
 

@@ -1,33 +1,55 @@
 <template>
-  <div class="media-view">
-    <VoteHost
-      :swipe="false"
-      v-if="media"
-      :media="media"
-      v-model:meta-visible="metaVisible"
-    />
-  </div>
+  <template v-if="media">
+    <MediaCard :media="media" @vote="handleVote" />
+  </template>
 </template>
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
 import { onMounted, ref } from 'vue';
-import { Media } from '../model/Media';
+import { Media, RecommendedMedia } from '../model/Media';
 import { useApiClient } from '../composables/useApiClient';
-import VoteHost from '../components/voting/VoteHost.vue';
+import MediaCard from '../components/media/MediaCard.vue';
+import { VoteType } from '../model/Vote';
 
 const route = useRoute();
 const apiClient = await useApiClient().apiClient;
 
-const media = ref(null as Media | null);
-const metaVisible = ref(true);
+const media = ref(null as RecommendedMedia | null);
+
+const handleVote = (voteType: VoteType) => {
+  const currentMedia = media.value;
+
+  if (currentMedia) {
+    // todo: use a store
+
+    if (
+      currentMedia.voteType === VoteType.NONE ||
+      currentMedia.voteType === VoteType.NEUTRAL
+    ) {
+      currentMedia.voteType = voteType;
+      apiClient.voteMedia(currentMedia.id, voteType);
+    } else {
+      currentMedia.voteType = VoteType.NEUTRAL;
+      apiClient.voteMedia(currentMedia.id, VoteType.NEUTRAL);
+    }
+  }
+};
 
 onMounted(() => {
   const mediaId = (route.params.mediaId || null) as string | null;
 
   if (mediaId) {
-    apiClient.getMedia(mediaId).then((mediaData) => {
-      media.value = mediaData;
+    Promise.all([
+      apiClient.getMedia(mediaId),
+      apiClient.getMediaVote(mediaId),
+    ]).then(([mediaData, voteType]) => {
+      media.value = {
+        ...(mediaData as Media),
+        voteType: voteType as VoteType,
+        score: '1',
+        seen: false,
+      };
     });
   }
 });

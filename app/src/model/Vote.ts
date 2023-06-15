@@ -1,4 +1,5 @@
 export const enum VoteType {
+  NONE = 'none',
   POSITIVE = 'positive',
   NEGATIVE = 'negative',
   NEUTRAL = 'neutral',

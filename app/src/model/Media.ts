@@ -1,9 +1,12 @@
+import { VoteType } from './Vote';
+
 export interface Genre {
   id: number;
   name: string;
 }
 
 export const enum MediaType {
+  ALL = 'all',
   TV = 'tv',
   MOVIE = 'movie',
 }
@@ -17,9 +20,14 @@ export interface Media {
   summary: string;
   genres: Genre[];
   runtime: number;
-  releaseDate: string;
   rating: number;
+  releaseDate: string;
   createdAt: string;
-  score?: string;
-  seen?: boolean;
+  updatedAt: string;
+}
+
+export interface RecommendedMedia extends Media {
+  score: string;
+  seen: boolean;
+  voteType: VoteType;
 }

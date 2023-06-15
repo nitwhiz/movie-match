@@ -5,6 +5,8 @@ const GC_INTERVAL = 1000;
 const GC_THRESHOLD = 1000;
 
 export default class Poster {
+  private static gcTimeout: number = -1;
+
   private static instancesByMediaId: Record<string, Poster> = {};
 
   public static getByMediaId(apiClient: ApiClient, mediaId: string): Poster {
@@ -31,6 +33,10 @@ export default class Poster {
   }
 
   public static startGC(): void {
+    if (Poster.gcTimeout > -1) {
+      window.clearTimeout(Poster.gcTimeout);
+    }
+
     this.cycleGC();
   }
 
@@ -38,11 +44,17 @@ export default class Poster {
     for (const [mediaId, poster] of Object.entries(Poster.instancesByMediaId)) {
       if (poster.shouldGC()) {
         delete Poster.instancesByMediaId[mediaId];
-        poster.revoke().catch((e) => console.error(e));
+        poster
+          .revoke()
+          .catch((e) => console.warn('error during poster free', e));
+
+        console.debug(`freed poster for ${mediaId}`);
       }
     }
 
-    window.setTimeout(() => {
+    console.debug(`PI: ${Object.keys(Poster.instancesByMediaId).length}`);
+
+    Poster.gcTimeout = window.setTimeout(() => {
       Poster.cycleGC();
     }, GC_INTERVAL);
   }
