@@ -1,24 +1,33 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import { useCurrentUser } from './composables/useCurrentUser';
-
+import LoginView from './views/LoginView.vue';
 import HomeView from './views/HomeView.vue';
-import VoteView from './views/VoteView.vue';
+import FeedView from './views/FeedView.vue';
 import MatchesView from './views/MatchesView.vue';
 import MediaView from './views/MediaView.vue';
-import LoginView from './views/LoginView.vue';
-import { freeAllMediaBlobUrls } from './api/PosterBlob';
+import VotesView from './views/VotesView.vue';
+import Poster from './common/Poster';
+import SearchView from './views/SearchView.vue';
 
 export const RouteName = {
+  ROOT: 'root',
   LOGIN: 'login',
   HOME: 'home',
-  VOTE: 'vote',
+  FEED: 'feed',
   MATCHES: 'matches',
   MEDIA: 'media',
+  SEARCH: 'search',
+  VOTES: 'votes',
 } as const;
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
+    name: RouteName.ROOT,
+    redirect: RouteName.LOGIN,
+  },
+  {
+    path: '/login',
     name: RouteName.LOGIN,
     component: LoginView,
   },
@@ -28,14 +37,24 @@ const routes: RouteRecordRaw[] = [
     component: HomeView,
   },
   {
-    path: '/vote',
-    name: RouteName.VOTE,
-    component: VoteView,
+    path: '/feed',
+    name: RouteName.FEED,
+    component: FeedView,
   },
   {
     path: '/matches',
     name: RouteName.MATCHES,
     component: MatchesView,
+  },
+  {
+    path: '/votes',
+    name: RouteName.VOTES,
+    component: VotesView,
+  },
+  {
+    path: '/search',
+    name: RouteName.SEARCH,
+    component: SearchView,
   },
   {
     path: '/media/:mediaId',
@@ -54,17 +73,17 @@ router.beforeEach(async (to, from, next) => {
 
   await load();
 
-  if (to.name === 'login' && currentUser.value) {
+  if (to.name === RouteName.LOGIN && currentUser.value) {
     next({ name: RouteName.HOME });
     return;
   }
 
-  if (to.name !== 'login' && !currentUser.value) {
+  if (to.name !== RouteName.LOGIN && !currentUser.value) {
     next({ name: RouteName.LOGIN });
     return;
   }
 
-  freeAllMediaBlobUrls();
+  Poster.freeAll();
 
   next();
 });

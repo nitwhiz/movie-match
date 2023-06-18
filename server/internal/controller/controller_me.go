@@ -8,6 +8,7 @@ import (
 	"github.com/nitwhiz/movie-match/server/pkg/model"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"net/http"
 )
 
@@ -15,10 +16,15 @@ type meRecommendationParams struct {
 	BelowScore string `form:"belowScore"`
 }
 
-type userMedia = struct {
+type userMedia struct {
 	model.Media
-	Score string `json:"score"`
-	Seen  bool   `json:"seen"`
+	Score    string `json:"score"`
+	Seen     bool   `json:"seen"`
+	VoteType string `gorm:"vote_type" json:"voteType"`
+}
+
+type voteByMediaIdParams struct {
+	MediaID string `uri:"mediaId"`
 }
 
 func meGetRecommendations(db *gorm.DB) gin.HandlerFunc {
@@ -45,12 +51,13 @@ func meGetRecommendations(db *gorm.DB) gin.HandlerFunc {
 
 		var media []*userMedia
 
-		pageSize := 10
+		pageSize := 25
 
 		db.
-			Select("m.*, c.score").
+			Select("m.*, COALESCE(v2.type, 'none') AS vote_type, c.score").
 			Table((&model.Media{}).TableName()+" AS m").
 			Joins("LEFT JOIN "+(&model.Vote{}).TableName()+" v ON m.id = v.media_id AND v.user_id != ?", user.ID).
+			Joins("LEFT JOIN "+(&model.Vote{}).TableName()+" v2 ON m.id = v2.media_id AND v2.user_id = ?", user.ID).
 			Joins(`CROSS JOIN LATERAL (VALUES (
 				LEAST(
 						   (
@@ -75,8 +82,7 @@ func meGetRecommendations(db *gorm.DB) gin.HandlerFunc {
 				, 100.0
 				)
 			)) c(score)`).
-			Joins("LEFT JOIN "+(&model.Vote{}).TableName()+" v2 ON m.id = v2.media_id AND v2.user_id = ?", user.ID).
-			Where("(v2.type IS NULL OR v2.type = 'neutral') AND c.score < ?", recommendationParams.BelowScore).
+			Where("(v2.type IS NULL) AND c.score < ?", recommendationParams.BelowScore).
 			Order("c.score DESC, v.type DESC").
 			Limit(pageSize).
 			Find(&media)
@@ -181,9 +187,73 @@ func meGet() gin.HandlerFunc {
 	}
 }
 
+func meGetVoteByMediaId(db *gorm.DB) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		user := auth.GetJWTUser(context)
+
+		if user == nil {
+			context.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+
+		var voteParams voteByMediaIdParams
+
+		if err := context.BindUri(&voteParams); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		media, err := dbutils.FirstByIdOrNil[model.Media](db.Preload(clause.Associations), voteParams.MediaID)
+
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if media == nil {
+			context.Status(http.StatusNotFound)
+			return
+		}
+
+		voteType := model.VoteTypeNone
+
+		for _, v := range media.Votes {
+			if v.UserID.String() == user.ID.String() {
+				voteType = v.Type
+				break
+			}
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"voteType": voteType,
+		})
+	}
+}
+
+func meGetVotes(db *gorm.DB) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		user := auth.GetJWTUser(context)
+
+		if user == nil {
+			context.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+
+		votes := []model.Vote{}
+
+		db.Where("user_id = ?", user.ID).Where("type != ?", model.VoteTypeNeutral).Order("updated_at DESC").Find(&votes)
+
+		context.JSON(http.StatusOK, gin.H{
+			"results": votes,
+		})
+	}
+}
+
 func useMe(router gin.IRouter, db *gorm.DB) {
 	meRouter := router.Group("/me")
 
 	meRouter.GET("", meGet())
 	meRouter.GET("recommended", meGetRecommendations(db))
+	meRouter.GET("votes", meGetVotes(db))
+	meRouter.GET("vote/:mediaId", meGetVoteByMediaId(db))
 }

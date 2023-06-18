@@ -1,18 +1,27 @@
 <template>
   <div class="home">
     <h1>
-      Hey<span v-if="userDisplayName">&nbsp{{ userDisplayName }}</span
+      Hey<span v-if="userDisplayName">&nbsp;{{ userDisplayName }}</span
       >!
     </h1>
-    <router-link :to="{ name: RouteName.VOTE }" class="vote">
-      <span class="text">Get Voting!</span>
-    </router-link>
-    <router-link :to="{ name: RouteName.MATCHES }" class="matches">
-      <span class="text">Check Matches</span>
-    </router-link>
-    <a class="logout" @click="logout">
-      <span class="text">Log-Out</span>
-    </a>
+    <NiceWrapper :colors="['rgb(148, 55, 255)', 'rgb(101, 229, 255)']">
+      <router-link :to="{ name: RouteName.FEED }">Get Voting!</router-link>
+    </NiceWrapper>
+    <NiceWrapper :colors="['rgb(255, 55, 140)', 'rgb(187, 255, 101)']">
+      <router-link :to="{ name: RouteName.MATCHES }">Check Matches</router-link>
+    </NiceWrapper>
+    <NiceWrapper :colors="['rgb(78, 169, 32)', 'rgb(31, 227, 174)']">
+      <router-link :to="{ name: RouteName.VOTES }">Your Votes</router-link>
+    </NiceWrapper>
+    <NiceWrapper :colors="['rgb(85, 212, 206)', 'rgb(199, 85, 212)']">
+      <router-link :to="{ name: RouteName.SEARCH }">Search Titles</router-link>
+    </NiceWrapper>
+    <NiceWrapper
+      :colors="['rgb(195, 58, 34)', 'rgb(253, 135, 45)']"
+      @click="logout"
+    >
+      Log-Out
+    </NiceWrapper>
   </div>
 </template>
 
@@ -21,6 +30,7 @@ import { useApiClient } from '../composables/useApiClient';
 import { computed } from 'vue';
 import { useCurrentUser } from '../composables/useCurrentUser';
 import { RouteName } from '../router';
+import NiceWrapper from '../components/nice/NiceWrapper.vue';
 
 const apiClient = await useApiClient().apiClient;
 const { currentUser } = useCurrentUser();
@@ -33,12 +43,12 @@ const logout = async () => {
 </script>
 
 <style lang="scss" scoped>
-@use '../styles/nice';
-
 .home {
   display: flex;
   align-items: center;
   flex-direction: column;
+
+  padding: 0 2rem;
 
   width: 100%;
   height: 100%;
@@ -49,47 +59,11 @@ const logout = async () => {
     margin: 4rem 0 4rem 0;
   }
 
-  a {
-    text-decoration: none;
-    color: white;
-
-    font-size: 2rem;
-    font-family: Pacifico, sans-serif;
-    text-transform: capitalize;
-
-    padding: 0.5rem 1rem;
-
-    margin-bottom: 1.25rem;
-    width: 75%;
-    min-width: 240px;
-
-    text-align: center;
+  .nice-wrapper {
+    margin-bottom: 1rem;
 
     &:last-child {
       margin-bottom: 0;
-    }
-
-    $border-width: 3px;
-
-    &.vote {
-      @include nice.gradient-border(
-        linear-gradient(20deg, rgb(148, 55, 255) 0%, rgb(101, 229, 255) 100%),
-        $border-width
-      );
-    }
-
-    &.matches {
-      @include nice.gradient-border(
-        linear-gradient(30deg, rgb(255, 55, 140) 0%, rgb(187, 255, 101) 100%),
-        $border-width
-      );
-    }
-
-    &.logout {
-      @include nice.gradient-border(
-        linear-gradient(30deg, rgb(195, 58, 34) 0%, rgb(253, 135, 45) 100%),
-        $border-width
-      );
     }
   }
 }

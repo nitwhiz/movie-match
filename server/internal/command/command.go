@@ -66,6 +66,30 @@ func GetApp() *cli.App {
 				Usage:  "Hash a string for usage as password in the user config",
 				Action: Hash,
 			},
+			{
+				Name:  "sideload",
+				Usage: "Sideload all scraped media from mongodb and posters from filesystem. Intended to be used with tmdb-scraper",
+				Subcommands: []*cli.Command{
+					{
+						Name:   "import",
+						Usage:  "Import all media",
+						Action: SideloadImport,
+					},
+					{
+						Name:  "query",
+						Usage: "Query for media",
+						Flags: []cli.Flag{
+							&cli.IntFlag{
+								Name: "movie-count",
+							},
+							&cli.IntFlag{
+								Name: "tv-count",
+							},
+						},
+						Action: SideloadQuery,
+					},
+				},
+			},
 		},
 	}
 }

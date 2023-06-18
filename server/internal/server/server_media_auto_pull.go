@@ -43,13 +43,13 @@ func NewMediaAutoPull(db *gorm.DB, providerName string) (*MediaAutoPull, error) 
 func (p *MediaAutoPull) Pull() {
 	log.Debug("Media Auto Pull Start")
 
-	if err := p.provider.Pull(p.db, model.MediaTypeMovie, 2); err != nil {
+	if err := p.provider.Pull(p.db, model.MediaTypeMovie, 50); err != nil {
 		log.WithFields(log.Fields{
 			"mediaType": model.MediaTypeMovie,
 		}).Error("Auto Pull Error: ", err)
 	}
 
-	if err := p.provider.Pull(p.db, model.MediaTypeTv, 2); err != nil {
+	if err := p.provider.Pull(p.db, model.MediaTypeTv, 50); err != nil {
 		log.WithFields(log.Fields{
 			"mediaType": model.MediaTypeTv,
 		}).Error("Auto Pull Error: ", err)
@@ -59,8 +59,10 @@ func (p *MediaAutoPull) Pull() {
 }
 
 func (p *MediaAutoPull) Start() {
+	pullInterval := time.Hour * 6
+
 	p.wg.Add(1)
-	timer := time.NewTicker(time.Hour * 6)
+	timer := time.NewTimer(pullInterval)
 
 	go func() {
 		defer p.wg.Done()
@@ -70,6 +72,7 @@ func (p *MediaAutoPull) Start() {
 			select {
 			case <-timer.C:
 				p.Pull()
+				timer.Reset(pullInterval)
 			case <-p.ctx.Done():
 				return
 			}

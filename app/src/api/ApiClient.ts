@@ -1,6 +1,6 @@
-import { Media, MediaType } from '../model/Media';
+import { Media, MediaType, RecommendedMedia } from '../model/Media';
 import axiosStatic, { Axios } from 'axios';
-import { VoteType } from '../model/Vote';
+import { Vote, VoteType } from '../model/Vote';
 import { User } from '../model/User';
 import { Match } from '../model/Match';
 import jwtDecode from 'jwt-decode';
@@ -51,7 +51,7 @@ export default class ApiClient extends EventEmitter<{
     this.tokenRefreshPromise = null;
   }
 
-  private setAccessToken(token: string) {
+  public setAccessToken(token: string) {
     this.accessToken = token;
     this.accessTokenExpiry = jwtDecode<Token>(token).exp * 1000;
 
@@ -89,7 +89,9 @@ export default class ApiClient extends EventEmitter<{
     // renew token 15 min before it's invalid
     if (Date.now() >= this.accessTokenExpiry - ACCESS_TOKEN_EXPIRY_THRESHOLD) {
       if (!this.tokenRefreshPromise) {
-        this.tokenRefreshPromise = this.refreshToken();
+        this.tokenRefreshPromise = this.refreshToken().catch(() =>
+          this.emit('unauthorized')
+        );
       }
 
       return this.tokenRefreshPromise.finally(
@@ -177,13 +179,23 @@ export default class ApiClient extends EventEmitter<{
 
   public async getRecommendedMedia(
     belowScore: string = '100'
-  ): Promise<Media[]> {
+  ): Promise<RecommendedMedia[]> {
     await this.checkAccessToken();
 
     return this.axios
-      .get<Results<Media>>(`/me/recommended?belowScore=${belowScore}`)
+      .get<Results<RecommendedMedia>>(
+        `/me/recommended?belowScore=${belowScore}`
+      )
       .then(({ data }) => data)
       .then(({ results }) => results);
+  }
+
+  public async getMediaVote(mediaId: string): Promise<VoteType> {
+    await this.checkAccessToken();
+
+    return this.axios
+      .get<{ voteType: VoteType }>(`/me/vote/${mediaId}`)
+      .then(({ data: { voteType } }) => voteType);
   }
 
   /**
@@ -217,16 +229,35 @@ export default class ApiClient extends EventEmitter<{
       .then(({ results }) => results);
   }
 
-  public async getMatches(
-    userId: string,
-    mediaType: MediaType | null
-  ): Promise<Match[]> {
+  public async getMatches(mediaType: MediaType | null): Promise<Match[]> {
     await this.checkAccessToken();
 
     return this.axios
       .get<Results<Match>>(
         `/matches${mediaType !== null ? `?type=${mediaType}` : ''}`
       )
+      .then(({ data }) => data)
+      .then(({ results }) => results);
+  }
+
+  public async getVotes(): Promise<Vote[]> {
+    await this.checkAccessToken();
+
+    return this.axios
+      .get<Results<Vote>>('/me/votes')
+      .then(({ data }) => data)
+      .then(({ results }) => results);
+  }
+
+  public async searchMedia(query: string): Promise<Media[]> {
+    await this.checkAccessToken();
+
+    return this.axios
+      .get<Results<Media>>('/search/media', {
+        params: {
+          query,
+        },
+      })
       .then(({ data }) => data)
       .then(({ results }) => results);
   }

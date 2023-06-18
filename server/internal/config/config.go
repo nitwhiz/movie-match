@@ -38,12 +38,26 @@ type LoginConfig struct {
 	Users  []UserConfig `mapstructure:"users"`
 }
 
+type SideloadDatabaseConfig struct {
+	Uri string `mapstructure:"uri"`
+}
+
+type SideloadPostersConfig struct {
+	FsBasePath string `mapstructure:"fs_base_path"`
+}
+
+type SideloadConfig struct {
+	MongoDb SideloadDatabaseConfig `mapstructure:"mongodb"`
+	Posters SideloadPostersConfig  `mapstructure:"posters"`
+}
+
 type Config struct {
 	Database       DatabaseConfig       `mapstructure:"database"`
 	MediaProviders MediaProvidersConfig `mapstructure:"media_providers"`
-	PosterConfig   PosterConfig         `mapstructure:"poster"`
+	Poster         PosterConfig         `mapstructure:"poster"`
 	Login          LoginConfig          `mapstructure:"login"`
 	Debug          bool                 `mapstructure:"debug"`
+	Sideload       *SideloadConfig      `mapstructure:"sideload"`
 }
 
 var C Config

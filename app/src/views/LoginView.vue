@@ -4,24 +4,31 @@
     <div class="error" v-if="showError">Password or username incorrect!</div>
     <form>
       <div class="input">
-        <input
-          type="text"
-          autocomplete="username"
-          placeholder="Username"
-          v-model="username"
-        />
+        <NiceWrapper :colors="['rgb(34, 193, 195)', 'rgb(253, 187, 45)']">
+          <input
+            type="text"
+            autocomplete="username"
+            placeholder="Username"
+            v-model="username"
+          />
+        </NiceWrapper>
       </div>
       <div class="input">
-        <input
-          type="password"
-          autocomplete="current-password"
-          placeholder="Password"
-          v-model="password"
-        />
+        <NiceWrapper :colors="['rgb(34, 193, 195)', 'rgb(253, 187, 45)']">
+          <input
+            type="password"
+            autocomplete="current-password"
+            placeholder="Password"
+            v-model="password"
+          />
+        </NiceWrapper>
       </div>
-      <div class="button" @click="login">
-        <span class="text">Log-In</span>
-      </div>
+      <NiceWrapper
+        :colors="['rgb(34, 193, 195)', 'rgb(253, 187, 45)']"
+        @click="login"
+      >
+        Log-In
+      </NiceWrapper>
     </form>
   </div>
 </template>
@@ -32,6 +39,7 @@ import { useApiClient } from '../composables/useApiClient';
 import { useRouter } from 'vue-router';
 import { useCurrentUser } from '../composables/useCurrentUser';
 import { RouteName } from '../router';
+import NiceWrapper from '../components/nice/NiceWrapper.vue';
 
 const apiClient = await useApiClient().apiClient;
 const currentUser = useCurrentUser();
@@ -61,8 +69,6 @@ const login = () => {
 </script>
 
 <style lang="scss" scoped>
-@use '../styles/nice';
-
 .login {
   width: 100%;
   height: 100%;
@@ -90,59 +96,7 @@ const login = () => {
   }
 
   .input {
-    text-transform: capitalize;
-
-    margin-bottom: 1.25rem;
-
-    width: 100%;
-    max-width: 280px;
-
-    text-align: center;
-
-    @include nice.gradient-border(
-      linear-gradient(20deg, rgb(34, 193, 195) 0%, rgb(253, 187, 45) 100%),
-      3px
-    );
-
-    input {
-      display: block;
-
-      width: 100%;
-
-      border-radius: 14px;
-
-      font-size: 1.5rem;
-      padding: 0.5rem 0.75rem;
-    }
-  }
-
-  .button {
-    font-family: Pacifico, sans-serif;
-
-    padding: 0.25rem;
-
-    text-transform: capitalize;
-
-    margin-bottom: 1.25rem;
-
-    width: 100%;
-    max-width: 280px;
-
-    text-align: center;
-
-    border-radius: 14px;
-
-    background: linear-gradient(
-      20deg,
-      rgb(34, 193, 195) 0%,
-      rgb(253, 187, 45) 100%
-    );
-
-    color: black;
-
-    .text {
-      font-size: 1.5rem;
-    }
+    margin-bottom: 1rem;
   }
 }
 </style>

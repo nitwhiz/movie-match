@@ -8,6 +8,7 @@ import (
 const VoteTypePositive = "positive"
 const VoteTypeNegative = "negative"
 const VoteTypeNeutral = "neutral"
+const VoteTypeNone = "none"
 
 type Vote struct {
 	ID        uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`

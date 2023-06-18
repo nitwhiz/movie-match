@@ -43,6 +43,7 @@ func Init(db *gorm.DB) (*gin.Engine, error) {
 	useUsers(router, db)
 	useMatches(router, db)
 	useMe(router, db)
+	useSearch(router, db)
 
 	return router, nil
 }
