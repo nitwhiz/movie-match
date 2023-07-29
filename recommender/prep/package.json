@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "description": "Prep scripts for recommender",
   "scripts": {
-    "prep": "ts-node prep.ts"
+    "voted": "ts-node vote2json.ts",
+    "all": "ts-node all2json.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@tsconfig/node18": "^18.2.0",
-    "@types/node": "^20.3.2",
+    "@types/node": "^18.16.20",
     "@types/pg": "^8.10.2",
     "csv": "^6.3.1",
     "pg": "^8.11.1",
