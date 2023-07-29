@@ -65,3 +65,13 @@ jobs:
           context: ./server
           tags: "ghcr.io/${{ github.repository }}-server:latest"
           push: ${{ github.ref == 'refs/heads/main' }}
+
+      ### for testing purposes
+
+      - name: Build server image for the adult free test
+        uses: docker/build-push-action@v4
+        if: ${{ github.ref_type != 'tag' }}
+        with:
+          context: ./server
+          tags: "ghcr.io/${{ github.repository }}-server:adultfree"
+          push: true

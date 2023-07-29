@@ -7,6 +7,7 @@ import (
 	"github.com/nitwhiz/movie-match/server/internal/config"
 	"github.com/nitwhiz/movie-match/server/internal/dbutils"
 	"github.com/nitwhiz/movie-match/server/internal/provider"
+	"github.com/nitwhiz/movie-match/server/pkg/model"
 	"github.com/ryanbradynd05/go-tmdb"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,6 +18,13 @@ import (
 	"strings"
 	"sync"
 )
+
+type AdultMovieError struct {
+}
+
+func (*AdultMovieError) Error() string {
+	return "adult movie"
+}
 
 func copyPoster(mediaPrefix string, originalPosterPath string, mediaSourceId string, mediaDestinationId string) (string, error) {
 	ext := path.Ext(originalPosterPath)
@@ -45,6 +53,10 @@ func copyPoster(mediaPrefix string, originalPosterPath string, mediaSourceId str
 func processMovie(l *log.Entry, db *gorm.DB, movie *tmdb.Movie) error {
 	if movie.Overview == "" {
 		return errors.New("missing overview")
+	}
+
+	if movie.Adult == true {
+		return &AdultMovieError{}
 	}
 
 	foreignId := fmt.Sprintf("%d", movie.ID)
@@ -202,6 +214,30 @@ func Import() error {
 
 			if err := processMovie(l, db, &movie); err != nil {
 				log.Warn(err)
+
+				var adultMovieError *AdultMovieError
+
+				if errors.As(err, &adultMovieError) {
+					foundMedia, findError := dbutils.FirstModelOrNil[model.Media](db, &model.Media{ForeignID: fmt.Sprintf("%d", movie.ID)})
+
+					if findError == nil {
+						if foundMedia == nil {
+							log.Info("media not present in database")
+						} else {
+							log.Info("removing media from database")
+
+							tx := db.Delete(foundMedia)
+
+							if tx.Error != nil {
+								log.Error(tx.Error)
+							}
+						}
+					} else {
+						log.Error(findError)
+
+					}
+				}
+
 				continue
 			}
 		}
