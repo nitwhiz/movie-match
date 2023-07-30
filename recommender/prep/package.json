@@ -4,7 +4,9 @@
   "description": "Prep scripts for recommender",
   "scripts": {
     "voted": "ts-node vote2json.ts",
-    "all": "ts-node all2json.ts"
+    "all": "ts-node all2json.ts",
+    "full": "ts-node vote2json.ts && ts-node all2json.ts",
+    "wordcount": "ts-node wordcount.ts"
   },
   "keywords": [],
   "author": "",

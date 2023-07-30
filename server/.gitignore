@@ -1,3 +1,6 @@
 .idea/
 config*.yml
 config*.yaml
+
+data/**/*
+!data/.gitkeep

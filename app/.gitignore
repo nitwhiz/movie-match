@@ -11,7 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
-.pnpm-store
+.pnpm
 
 # Editor directories and files
 .vscode/*

@@ -1,11 +1,12 @@
-FROM node:18.16.0-alpine3.17
+FROM node:18.16.0-alpine3.17 AS base
 
-RUN npm install --location=global pnpm@8.5.1
+ENV PNPM_HOME="/app/.pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable
 
 COPY docker/dev/app/wrapper.sh /wrapper.sh
 
 WORKDIR /app
-
-USER node
 
 CMD [ "/wrapper.sh" ]

@@ -13,7 +13,7 @@ import { RouteName } from './router';
 const router = useRouter();
 const apiClient = await useApiClient().apiClient;
 
-(await apiClient)
+apiClient
   .on('unauthorized', () => {
     if (router.currentRoute.value.name !== 'login') {
       router.push({ name: RouteName.LOGIN });

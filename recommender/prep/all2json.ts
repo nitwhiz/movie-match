@@ -9,8 +9,8 @@ const enum MediaType {
 const run = async () => {
   const client = new Client({
     host: 'localhost',
-    user: 'pgres',
-    password: 'pgres',
+    user: 'root',
+    password: 'root',
     database: 'movie_match',
   });
 

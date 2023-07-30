@@ -18,8 +18,8 @@ services:
       dockerfile: "docker/dev/api/Dockerfile"
     volumes:
       - "./server:/app:ro"
+      - "./server/data/posters:/var/lib/movie-match/posters"
       - "api_go_data:/go"
-      - "api_poster_data:/var/lib/movie-match/posters"
     ports:
       - "6445:6445"
     depends_on:
@@ -42,4 +42,3 @@ networks:
 volumes:
   db_data:
   api_go_data:
-  api_poster_data:

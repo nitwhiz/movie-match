@@ -1,24 +1,27 @@
 import re
 import string
 
-import pandas as pd
 from keras_preprocessing.sequence import pad_sequences
 from keras_preprocessing.text import Tokenizer
 from nltk.corpus import stopwords
-from sklearn.naive_bayes import GaussianNB
 
 
-def process_media(media):
-    # remove unneeded columns
-    # not sure how to process mediaReleaseDate for now - maybe use unix seconds since 1970
+def sanitize_text(media):
+    # fill empty values
 
-    media = media.drop(columns=['mediaId', 'mediaReleaseDate'])
+    media = media.fillna('')
 
     # remove punctuation
 
     media['mediaSummary'] = media['mediaSummary'].apply(lambda x: re.sub('[^\w\s]', '', x))
+    media['mediaTitle'] = media['mediaTitle'].apply(lambda x: re.sub('[^\w\s]', '', x))
 
-    # remove stopwords
+    media['genre0'] = media['genre0'].apply(lambda x: re.sub('\s', '', x))
+    media['genre1'] = media['genre1'].apply(lambda x: re.sub('\s', '', x))
+    media['genre2'] = media['genre2'].apply(lambda x: re.sub('\s', '', x))
+    media['genre3'] = media['genre3'].apply(lambda x: re.sub('\s', '', x))
+
+    # remove stop words
 
     stops = stopwords.words('german')
 
@@ -32,9 +35,18 @@ def process_media(media):
                             word not in stops])
     )
 
-    # fill null with empty strings
+    return media
 
-    media.fillna('', inplace=True)
+
+def process_media_flat(media):
+    # remove unneeded columns
+    # not sure how to process mediaReleaseDate for now - maybe use unix seconds since 1970
+
+    media = media.drop(columns=['mediaId', 'mediaReleaseDate'])
+
+    # remove stopwords
+
+    media = sanitize_text(media)
 
     # fit tokenizer for genres
 
@@ -67,7 +79,7 @@ def process_media(media):
 
     # map prosa to tokens
 
-    summary_word_count = 20
+    summary_word_count = 60
 
     summary_seqs = pad_sequences(prosa_tokenizer.texts_to_sequences(media['mediaSummary']), maxlen=summary_word_count,
                                  padding='post')
@@ -84,42 +96,3 @@ def process_media(media):
         media[f'title{i}'] = title_seqs[:, i]
 
     return media.drop(columns=['mediaSummary', 'mediaTitle'])
-
-
-def main():
-    print("hello world!")
-
-    media_voted_raw = pd.read_json('../data/media_all_voted.json')
-    media_voted = process_media(media_voted_raw)
-
-    # x_train, x_test, y_train, y_test = train_test_split(media, media['voteType'], test_size=.25, random_state=0)
-    # cm = confusion_matrix(y_test, y_pred)
-
-    classifier = GaussianNB()
-
-    x = media_voted.drop(columns=['voteType'])
-    y = media_voted['voteType']
-
-    classifier.fit(x, y)
-
-    # vote all media
-
-    media_all_raw = pd.read_json('../data/media_all.json')
-    media_all = process_media(media_all_raw)
-
-    pred_all = classifier.predict(media_all)
-
-    media_all_raw['voteType'] = pred_all
-
-    recommended_media = media_all_raw[media_all_raw['voteType'] == 1]
-
-    merged_df = recommended_media.merge(media_voted_raw, on='mediaId', how='left', indicator=True)
-
-    recommended_media = merged_df[merged_df['_merge'] == 'left_only']
-    recommended_media.drop(columns=['_merge'], inplace=True)
-
-    media_voted.head()
-
-
-if __name__ == "__main__":
-    main()
