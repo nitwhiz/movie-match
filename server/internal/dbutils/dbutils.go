@@ -65,6 +65,7 @@ func Migrate(db *gorm.DB) error {
 		&model.Media{},
 		&model.Vote{},
 		&model.MediaSeen{},
+		&model.MediaUserVotePrediction{},
 	)
 }
 

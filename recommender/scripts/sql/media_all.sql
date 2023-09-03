@@ -16,4 +16,4 @@ from media m
                       row_number() over (partition by mg.media_id order by g.name) as row_num
                from media_genres mg
                         join genres g on g.id = mg.genre_id) mg on mg.media_id = m.id
-group by m.id, m.title, m.summary, m.rating, m.release_date, m.runtime, m.type;
+group by m.id;

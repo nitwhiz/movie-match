@@ -4,9 +4,10 @@ import string
 from keras_preprocessing.sequence import pad_sequences
 from keras_preprocessing.text import Tokenizer
 from nltk.corpus import stopwords
+from pandas import DataFrame
 
 
-def sanitize_text(media):
+def sanitize_text(media: DataFrame):
     # fill empty values
 
     media = media.fillna('')
@@ -38,7 +39,7 @@ def sanitize_text(media):
     return media
 
 
-def process_media(media):
+def process_media(media: DataFrame):
     # remove unneeded columns
     # not sure how to process mediaReleaseDate for now - maybe use unix seconds since 1970
 

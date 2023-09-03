@@ -32,6 +32,7 @@ func Purge(_ *cli.Context) error {
 
 	dropTable(db, &model.Vote{})
 	dropTable(db, &model.MediaSeen{})
+	dropTable(db, &model.MediaUserVotePrediction{})
 	dropTable(db, &model.User{})
 	dropTable(db, &model.Genre{})
 	dropTable(db, &model.Media{})

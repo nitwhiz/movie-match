@@ -14,6 +14,7 @@ type MediaUserVotePrediction struct {
 	User          *User     `json:"-"`
 	PredictedVote float64   `json:"predictedVote"`
 	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 func (r *MediaUserVotePrediction) TableName() string {
