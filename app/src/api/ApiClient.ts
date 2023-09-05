@@ -178,7 +178,7 @@ export default class ApiClient extends EventEmitter<{
   }
 
   public async getRecommendedMedia(
-    belowScore: string = '100'
+    belowScore: string = '2'
   ): Promise<RecommendedMedia[]> {
     await this.checkAccessToken();
 

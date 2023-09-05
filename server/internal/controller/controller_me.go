@@ -54,36 +54,12 @@ func meGetRecommendations(db *gorm.DB) gin.HandlerFunc {
 		pageSize := 25
 
 		db.
-			Select("m.*, COALESCE(v2.type, 'none') AS vote_type, c.score").
+			Select("m.*, COALESCE(v.type, 'none') AS vote_type, muvp.predicted_vote as score").
 			Table((&model.Media{}).TableName()+" AS m").
-			Joins("LEFT JOIN "+(&model.Vote{}).TableName()+" v ON m.id = v.media_id AND v.user_id != ?", user.ID).
-			Joins("LEFT JOIN "+(&model.Vote{}).TableName()+" v2 ON m.id = v2.media_id AND v2.user_id = ?", user.ID).
-			Joins(`CROSS JOIN LATERAL (VALUES (
-				LEAST(
-						   (
-							   ABS(HASHTEXT(m.id::text)) / 2147483647.0
-							   )
-						   * (
-							   CASE
-								   WHEN v.type = 'positive' THEN 33
-								   WHEN v.type = 'neutral' THEN 60
-								   WHEN v.type = 'negative' THEN 75
-								   WHEN v.type IS NULL THEN 100
-								   END
-							   )
-					   + (
-							   CASE
-								   WHEN v.type = 'positive' THEN 67
-								   WHEN v.type = 'neutral' THEN 40
-								   WHEN v.type = 'negative' THEN 0
-								   WHEN v.type IS NULL THEN 0
-								   END
-							)
-				, 100.0
-				)
-			)) c(score)`).
-			Where("(v2.type IS NULL) AND c.score < ?", recommendationParams.BelowScore).
-			Order("c.score DESC, v.type DESC").
+			Joins("JOIN "+(&model.MediaUserVotePrediction{}).TableName()+" muvp ON muvp.user_id = ? AND m.id = muvp.media_id", user.ID).
+			Joins("LEFT JOIN "+(&model.Vote{}).TableName()+" v ON m.id = v.media_id AND v.user_id = ?", user.ID).
+			Where("muvp.predicted_vote < ? AND (v.type IS NULL OR v.type = 'neutral')", recommendationParams.BelowScore).
+			Order("muvp.predicted_vote DESC").
 			Limit(pageSize).
 			Find(&media)
 

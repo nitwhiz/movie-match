@@ -9,7 +9,7 @@ const apiClient = await useApiClient().apiClient;
 
 const isFetchingMedia = ref(false);
 const mediaList = ref([] as RecommendedMedia[]);
-const belowScore = ref('100');
+const belowScore = ref('2');
 
 const fetchMedia = () => {
   if (isFetchingMedia.value) {
