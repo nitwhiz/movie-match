@@ -11,7 +11,7 @@ select m.id                                           as media_id,
        max(case when mg.row_num = 3 then mg.name end) as media_genre_2,
        max(case when mg.row_num = 4 then mg.name end) as media_genre_3
 from media m
-         join (select mg.media_id,
+         left join (select mg.media_id,
                       g.name,
                       row_number() over (partition by mg.media_id order by g.name) as row_num
                from media_genres mg

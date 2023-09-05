@@ -1,5 +1,5 @@
-from scripts.py.database import get_db_connection, get_all_user_ids
-from scripts.py.predict import predict_votes
+from database import get_db_connection, get_all_user_ids
+from predict import predict_votes
 
 conn = get_db_connection()
 

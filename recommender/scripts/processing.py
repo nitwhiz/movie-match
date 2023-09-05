@@ -17,6 +17,8 @@ def sanitize_text(media: DataFrame):
     media['media_summary'] = media['media_summary'].apply(lambda x: re.sub('[^\w\s]', '', x))
     media['media_title'] = media['media_title'].apply(lambda x: re.sub('[^\w\s]', '', x))
 
+    # remove whitespace from genres
+
     media['media_genre_0'] = media['media_genre_0'].apply(lambda x: re.sub('\s', '', x))
     media['media_genre_1'] = media['media_genre_1'].apply(lambda x: re.sub('\s', '', x))
     media['media_genre_2'] = media['media_genre_2'].apply(lambda x: re.sub('\s', '', x))

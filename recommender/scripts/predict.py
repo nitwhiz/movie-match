@@ -3,8 +3,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sqlalchemy.engine import Connection
 
-from scripts.py.database import get_voted_media, get_all_media
-from scripts.py.processing import process_media
+from database import get_voted_media, get_all_media
+from processing import process_media
 
 
 def predict_votes(db_connection: Connection, user_id: str):

@@ -1,0 +1,6 @@
+Keras-Preprocessing
+pandas
+scikit-learn
+sqlalchemy
+nltk
+psycopg2-binary
