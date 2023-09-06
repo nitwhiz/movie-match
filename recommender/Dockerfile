@@ -7,3 +7,6 @@ COPY ./requirements.txt /app
 
 # install dependencies
 RUN pip install -r /app/requirements.txt
+
+# install stopwords
+RUN python -m nltk.downloader stopwords
