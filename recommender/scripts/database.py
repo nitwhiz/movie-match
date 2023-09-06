@@ -18,7 +18,7 @@ def get_db_connection():
 
 
 def get_voted_media(conn: Connection, user_id: str) -> DataFrame:
-    f = open(Path(__file__).parent / '../sql/media_voted.sql', 'r')
+    f = open(Path(__file__).parent / 'sql/media_voted.sql', 'r')
 
     return pd.read_sql_query(
         sqlalchemy.text(f.read()),
@@ -30,7 +30,7 @@ def get_voted_media(conn: Connection, user_id: str) -> DataFrame:
 
 
 def get_all_media(conn: Connection) -> DataFrame:
-    f = open(Path(__file__).parent / '../sql/media_all.sql', 'r')
+    f = open(Path(__file__).parent / 'sql/media_all.sql', 'r')
 
     return pd.read_sql_query(
         f.read(),
