@@ -65,3 +65,22 @@ jobs:
           context: ./server
           tags: "ghcr.io/${{ github.repository }}-server:latest"
           push: ${{ github.ref == 'refs/heads/main' }}
+
+      ### recommender
+
+      - name: Build recommender image and publish as specific tag
+        uses: docker/build-push-action@v4
+        if: ${{ github.ref_type == 'tag' }}
+        with:
+          context: ./recommender
+          tags: "ghcr.io/${{ github.repository }}-recommender:${{ github.ref_name }}"
+          push: true
+
+      - name: Build recommender image and publish as latest
+        uses: docker/build-push-action@v4
+        if: ${{ github.ref_type != 'tag' }}
+        with:
+          context: ./recommender
+          tags: "ghcr.io/${{ github.repository }}-recommender:latest"
+          push: ${{ github.ref == 'refs/heads/main' }}
+
