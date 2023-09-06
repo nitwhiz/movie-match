@@ -14,7 +14,10 @@ def get_db_connection():
     db_password = os.getenv('MOVIE_MATCH_DB_PASSWORD')
     db_host = os.getenv('MOVIE_MATCH_DB_HOST')
 
-    return create_engine(f'postgresql+psycopg2://{db_username}:{db_password}@{db_host}/movie_match', pool_recycle=3600).connect()
+    return create_engine(
+        f'postgresql+psycopg2://{db_username}:{db_password}@{db_host}/movie_match',
+        pool_recycle=3600
+    ).connect()
 
 
 def get_voted_media(conn: Connection, user_id: str) -> DataFrame:
